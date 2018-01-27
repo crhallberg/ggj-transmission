@@ -8,6 +8,8 @@
     <script src="https://www.gstatic.com/firebasejs/4.9.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/4.9.0/firebase-database.js"></script>
     <script src="./firebase.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/phaser/2.4.8/phaser.min.js"></script>
+    <script src="./topgeese.js"></script>
   </head>
   <body>
     <p>What a gorgeous game.</p>
@@ -36,26 +38,28 @@
           setTimeout(function nextSecond() {
             showCountdown(seconds - 1)
           }, 1000);
-        } else if (team === "A") {
-          // UNLOCK GAME
-          var min = Math.min(shifterData["A"], shifterData["B"]);
-          var max = Math.max(shifterData["A"], shifterData["B"]);
-          var gears = [];
-          for (var i = 0; i < min; i++) {
-            var r = Math.floor(Math.random() * min);
-            var t = typeof gears[i] === "undefined" ? (i + 1) : gears[i];
-            gears[i] = typeof gears[r] === "undefined" ? (r + 1) : gears[r];
-            gears[r] = t;
+        } else {
+          game_locked = false;
+          if (team === "A") {
+            // UNLOCK GAME
+            var min = Math.min(shifterData["A"], shifterData["B"]);
+            var max = Math.max(shifterData["A"], shifterData["B"]);
+            var gears = [];
+            for (var i = 0; i < min; i++) {
+              var r = Math.floor(Math.random() * min);
+              var t = typeof gears[i] === "undefined" ? (i + 1) : gears[i];
+              gears[i] = typeof gears[r] === "undefined" ? (r + 1) : gears[r];
+              gears[r] = t;
+            }
+            for (var i = min; i < max; i++) {
+              gears.push(i + 1);
+            }
+            firebase.database().ref("races/" + raceKey).push().set({
+              gear: "order",
+              order: gears,
+              time: new Date().getTime()
+            });
           }
-          for (var i = min; i < max; i++) {
-            gears.push(i + 1);
-          }
-          firebase.database().ref("races/" + raceKey).push().set({
-            gear: "order",
-            order: gears,
-            time: new Date().getTime()
-          });
-          alert(gears);
         }
       }
       var kickedOff = false;
