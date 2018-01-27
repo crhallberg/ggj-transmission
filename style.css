@@ -28,8 +28,9 @@ td:not(:first-child) {
 }
 
 /* utilities */
-.debug {
-  display: none;
+.debug,
+.hidden {
+  display: none !important;
 }
 .ready {
   color: red;
@@ -137,6 +138,10 @@ td:not(:first-child) {
 }
 .role_icon {
   width: 20px;
+}
+#room_code {
+  font-weight: 900;
+  color: #777;
 }
 
 /* leaderboard.html */

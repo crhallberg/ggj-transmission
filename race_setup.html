@@ -6,21 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<title>Quack to the Future</title>
 		<link rel="stylesheet" type="text/css" href="style.css">
-		<link href="https://fonts.googleapis.com/css?family=Roboto+Condensed" rel="stylesheet">
-		<link href="https://fonts.googleapis.com/css?family=Niconne" rel="stylesheet">
-		<link href="https://fonts.googleapis.com/css?family=Oswald:400,700" rel="stylesheet">
-    <script src="https://www.gstatic.com/firebasejs/4.9.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/4.9.0/firebase-database.js"></script>
-    <script src="./firebase.js"></script>
+		<link href="https://fonts.googleapis.com/css?family=Roboto+Condensed" rel="stylesheet"/>
+		<link href="https://fonts.googleapis.com/css?family=Oswald:400,700" rel="stylesheet"/>
+		<link href="https://fonts.googleapis.com/css?family=Niconne" rel="stylesheet"/>
 	</head>
 	<body>
 		<div id="center_container">
 			<div id="race_welcome">Welcome to the...</div><br>
-			<div id="race_name">Slippery Canyon Cup</div><img id="trophy_cup" src="images/trophy.svg"/><br>
-			<br>
-			<br>
-			Select the role for this window...<br>
-			<br>
+			<div id="race_name">Loading...</div><img id="trophy_cup" src="images/trophy.svg"/>
+      <p id="room_code">&nbsp;</p>
+			<p>SELECT YOUR ROLE:</p>
 			<div class="column">
 				<u>Team A</u><br>
 				<button disabled id="select-a-driver" data-team="A" data-role="driver" class="ui_button role_button">the driver</button><br>
@@ -45,30 +40,113 @@
 				<img class="role_icon team-b-shifter" src="images/shifter_inactive.svg"/>
 				<img class="role_icon team-b-shifter" src="images/shifter_inactive.svg"/>
 			</div>
+      <div>
+        <button id="ready_button" class="ui_button hidden">READY</button>
+      </div>
 		</div>
 
+    <script src="https://www.gstatic.com/firebasejs/4.9.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.9.0/firebase-database.js"></script>
+    <script src="./firebase.js"></script>
+    <script src="./random-name.js"></script>
     <script>
-      var cupName = localStorage.getItem("race");
-      var raceKey = localStorage.getItem("raceKey");
+      var cupName = localStorage.getItem("race_name");
+      var raceKey = localStorage.getItem("room_code");
       var roleKey, currentRole = false;
 
-      document.getElementById("race_name").innerHTML = cupName.split(" ")
-        .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
-        .join(" ") + " Cup";
-
       document.addEventListener("config-loaded", function leaderboard() {
-        roleKey = localStorage.getItem("roleKey");
+        var driverAicon = document.querySelector(".team-a-driver");
+        var driverBicon = document.querySelector(".team-b-driver");
+        var teamAshifters = document.querySelectorAll(".team-a-shifter");
+        var teamBshifters = document.querySelectorAll(".team-b-shifter");
+        function updateRolesAndIcons() {
+          firebase.database().ref(raceKey + "/roles").once("value").then(data => {
+            var driverA = false;
+            var driverB = false;
+            var shiftersA = 0;
+            var shiftersB = 0;
+            var json = data.val();
+            for (var key in json) {
+              if (key === roleKey) {
+                currentRole = json[key];
+                document.querySelector("[data-team='" + currentRole.team + "'][data-role='" + currentRole.role + "']").classList.add("success");
+                if (currentRole.role === "driver") {
+                  document.getElementById("ready_button").classList.remove("hidden");
+                } else {
+                  document.getElementById("ready_button").classList.add("hidden");
+                }
+              }
+              if (json[key].role === "driver") {
+                if (json[key].team === "A") {
+                  driverA = true;
+                } else {
+                  driverB = true;
+                }
+              } else {
+                if (json[key].team === "A") {
+                  shiftersA += 1;
+                } else {
+                  shiftersB += 1;
+                }
+              }
+            }
+            // Disable buttons
+            if (driverA) {
+              document.getElementById("select-a-driver").disabled = true;
+              driverAicon.src = "images/driver.svg";
+            } else {
+              document.getElementById("select-a-driver").disabled = false;
+              driverAicon.src = "images/driver_inactive.svg";
+            }
+            if (driverB) {
+              document.getElementById("select-b-driver").disabled = true;
+              driverBicon.src = "images/driver.svg";
+            } else {
+              document.getElementById("select-b-driver").disabled = false;
+              driverBicon.src = "images/driver_inactive.svg";
+            }
+            // Update icons
+            for (var i = 0; i < teamAshifters.length; i++) {
+              if (i < shiftersA) {
+                teamAshifters[i].src = "images/shifter.svg";
+              } else {
+                teamAshifters[i].src = "images/shifter_inactive.svg";
+              }
+            }
+            for (var i = 0; i < teamBshifters.length; i++) {
+              if (i < shiftersB) {
+                teamBshifters[i].src = "images/shifter.svg";
+              } else {
+                teamBshifters[i].src = "images/shifter_inactive.svg";
+              }
+            }
+
+            // UPDATE HEADERS
+            // (here for loading and updated names)
+            document.getElementById("room_code").innerHTML = "Room Code: " + raceKey;
+            document.getElementById("race_name").innerHTML = cupName.split(" ")
+              .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+              .join(" ") + " Cup";
+          });
+        }
+
+        roleKey = localStorage.getItem("role_key");
         if (!roleKey) {
           roleKey = firebase.database().ref(raceKey + "/roles").push().key;
-          localStorage.setItem("roleKey", roleKey);
+          localStorage.setItem("role_key", roleKey);
         }
+        updateRolesAndIcons();
+        setInterval(updateRolesAndIcons, 1000);
 
         var buttons = document.querySelectorAll(".role_button");
         for (var i = 0; i < buttons.length; i++) {
           buttons[i].addEventListener("click", function clickRole() {
             updates = {};
-            updates[roleKey] = { team: this.dataset.team, role: this.dataset.role };
-            firebase.database().ref().update(updates);
+            updates[raceKey + "/roles/" + roleKey] = {
+              team: this.dataset.team,
+              role: this.dataset.role
+            };
+            firebase.database().ref().update(updates).then(updateRolesAndIcons);
             var prev = document.querySelector(".success");
             if (prev) prev.classList.remove("success");
             this.classList.add("success");
