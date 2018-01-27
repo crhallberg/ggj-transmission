@@ -16,9 +16,12 @@ var road;
 var secondRoad;
 var TACH_FLOOR = 1000;
 var gear = 0;
-var VELOCITY_INCREMENTS_PER_GEAR = 8;
-var MIN_RPM = 1000;
+var VELOCITY_INCREMENTS_PER_GEAR = 14;
+var TACH_INCREMENT_PER_ACCEL = 200;
+var MIN_RPM = 600;
 var accelDown;
+var tach = 1000;
+var frameCount = 0;
 
 
 function create()
@@ -34,14 +37,22 @@ function create()
 
 function update()
 {
-	if (GAME_LOCKED) {
-		return;
-	}
+//	if (GAME_LOCKED) {
+//		return;
+//	}
 	changeRoadSegmentPosition(road);
 	changeRoadSegmentPosition(secondRoad);
 	errorCorrect(road, secondRoad);
-	attemptToIncreaseVelocity();
+	
+	if(frameCount >= 60)
+	{
+		attemptToIncreaseVelocity();
+		frameCount = 0;
+	}
+	frameCount++;
 	logTach();
+	console.log(velocity);
+	console.log('GEAR: ' + gear);
 
 	if(arrows.right.isDown)
 	{
@@ -49,6 +60,7 @@ function update()
 	}
 	if (arrows.right.isUp && accelDown && gear <= 4)
 	{
+		tach -= 2800;
 		gear++;
 		accelDown = false;
 	}
@@ -56,19 +68,29 @@ function update()
 	{
 		gear--;
 	}
+	
+	if(tach < MIN_RPM)
+	{
+		velocity = 1;
+		gear = 0;
+		tach = 1000;
+		console.log('STALLED');
+	}
 }
 
 function attemptToIncreaseVelocity()
 {
 	if(velocity < (VELOCITY_INCREMENTS_PER_GEAR + (VELOCITY_INCREMENTS_PER_GEAR * gear)))
 	{
+		console.log('GEAR: ' + gear);
 		velocity++;
+		tach += TACH_INCREMENT_PER_ACCEL;
 	}
 }
 
 function logTach()
 {
-	console.log('TACH: ' + parseInt(TACH_FLOOR + (300 * velocity%(VELOCITY_INCREMENTS_PER_GEAR-1))));
+	console.log('TACH: ' + tach);
 }
 
 function changeRoadSegmentPosition(segment)
