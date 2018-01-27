@@ -50,8 +50,8 @@
     <script src="./firebase.js"></script>
     <script src="./random-name.js"></script>
     <script>
-      var cupName = localStorage.getItem("race_name");
-      var raceKey = localStorage.getItem("room_code");
+      var startTime = new Date().getTime();
+      var cupName, raceKey = localStorage.getItem("room_code");
       var roleKey, currentRole = false;
 
       document.addEventListener("config-loaded", function leaderboard() {
@@ -60,6 +60,12 @@
         var teamAshifters = document.querySelectorAll(".team-a-shifter");
         var teamBshifters = document.querySelectorAll(".team-b-shifter");
         function updateRolesAndIcons() {
+          // Get title
+          firebase.database().ref(raceKey).once("value").then(data => {
+            var json = data.val();
+            cupName = json.name;
+          });
+          // Roles
           firebase.database().ref(raceKey + "/roles").once("value").then(data => {
             var driverA = false;
             var driverB = false;
@@ -124,9 +130,7 @@
             // UPDATE HEADERS
             // (here for loading and updated names)
             document.getElementById("room_code").innerHTML = "Room Code: " + raceKey;
-            document.getElementById("race_name").innerHTML = cupName.split(" ")
-              .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
-              .join(" ") + " Cup";
+            document.getElementById("race_name").innerHTML = cupName + " Cup";
           });
         }
 
@@ -152,6 +156,26 @@
             this.classList.add("success");
           }, false);
         }
+
+        // Ready button
+        document.getElementById("ready_button").addEventListener("click", function readyButton() {
+          localStorage.setItem("team", currentRole.team);
+          var updates = {};
+          updates[raceKey + "/ready/" + roleKey] = {
+            team: currentRole.team,
+            role: currentRole.role,
+          };
+          firebase.database().ref().update(updates);
+        });
+        firebase.database().ref(raceKey + "/ready").on("child_added", data => {
+          var json = data.val();
+          if (!json.time || json.time < startTime) {
+            return;
+          }
+          localStorage.setItem("room_name", cupName);
+          localStorage.setItem("team", currentRole.team);
+          window.location = currentRole.role + ".html";
+        });
       }, false);
     </script>
 	</body>

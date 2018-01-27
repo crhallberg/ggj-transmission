@@ -38,16 +38,22 @@
       newName();
 
       document.getElementById("start").addEventListener("click", function connectToRace() {
-        var cupName = getRandomName();
-        localStorage.setItem("room_code", codeField.value);
-        localStorage.setItem("race_name", cupName);
-        firebase.database().ref(codeField.value).set({
-          name: cupName,
-          roles: [],
-          times: [],
-        }).then(x => {
+
+      firebase.database().ref(codeField.value).once('value').then(exists => {
+        if (!exists.val()) {
+          var cupName = getRandomName();
+          localStorage.setItem("room_code", codeField.value);
+          localStorage.setItem("race_name", cupName);
+          firebase.database().ref(codeField.value).set({
+            name: cupName,
+            roles: [],
+            times: [],
+          }).then(x => {
+            window.location = "race_setup.html";
+          });
+        } else {
           window.location = "race_setup.html";
-        });
+        }
       }, false);
     </script>
   </body>
