@@ -47,7 +47,10 @@
             showCountdown(seconds - 1)
           }, 1000);
         } else {
-          game_locked = false;
+
+          GAME_LOCKED = false;
+          START_TIME = new Date().getTime();
+
           if (team === "A") {
             // UNLOCK GAME
             var min = Math.min(shifterData["A"], shifterData["B"]);
@@ -80,9 +83,19 @@
         }, 1000);
       }
 
+      function submitTime() {
+        var end = new Date().getTime();
+        firebase.database().ref("times").push().set({
+          race: cupName,
+          raceKey: raceKey,
+          time: end - START_TIME,
+          team: team,
+          timestamp: end,
+        });
+      }
+
       var isReady = false;
       var otherIsReady = false;
-      var SHIFT_GEAR = 0;
       document.addEventListener("config-loaded", function raceIndicators() {
         var raceRef = firebase.database().ref("races/" + raceKey);
 
@@ -110,9 +123,9 @@
           if (team === json.team) {
             if (!kickedOff && otherIsReady) {
               send("kickoff");
-            } else if (!game_locked) {
-              SHIFT_GEAR = json.gear;
-              document.getElementById("shift-gear").innerHTML = SHIFT_GEAR;
+            } else if (!GAME_LOCKED) {
+              CURRENT_GEAR = json.gear;
+              document.getElementById("shift-gear").innerHTML = CURRENT_GEAR;
             }
           } else {
             if (data.val().gear === "ready") {

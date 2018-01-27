@@ -1,5 +1,8 @@
 var game = new Phaser.Game(800, 600, Phaser.AUTO, 'main_game', { preload: preload, create: create, update: update });
-var game_locked = true;
+
+var GAME_LOCKED = true;
+var CURRENT_GEAR = -1;
+var START_TIME;
 
 function preload()
 {
@@ -31,7 +34,7 @@ function create()
 
 function update()
 {
-	if (game_locked) {
+	if (GAME_LOCKED) {
 		return;
 	}
 	changeRoadSegmentPosition(road);
