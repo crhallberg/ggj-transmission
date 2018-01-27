@@ -13,9 +13,8 @@
   </head>
   <body>
     <p><a href="index.html">&lt; New Race</a></p>
-    <p>What a gorgeous game.</p>
-    <p>Ooooo. Dials.</p>
     <p>Seconds: <span id="countdown"></span></p>
+    <p>Gear: <span id="shift-gear"></span></p>
     <button id="resend-order" class="debug">Debug Order</button>
     <div id="modal" class="open">
       <h1 id="banner"></h1>
@@ -83,6 +82,7 @@
 
       var isReady = false;
       var otherIsReady = false;
+      var SHIFT_GEAR = 0;
       document.addEventListener("config-loaded", function raceIndicators() {
         var raceRef = firebase.database().ref("races/" + raceKey);
 
@@ -96,19 +96,23 @@
 
         var startTime = new Date().getTime();
         raceRef.on('child_added', function(data) {
-          if (!data.val().time || data.val().time < startTime) {
+          var json = data.val();
+          if (!json.time || json.time < startTime) {
             return;
           }
-          console.log(data.val());
+          console.log(json);
           if (data.key.length > 4) {
             localStorage.setItem("startAt", data.key);
           }
-          if (!kickedOff && data.val().gear === "kickoff") {
+          if (!kickedOff && json.gear === "kickoff") {
             kickoff();
           }
-          if (team == data.val().team) {
+          if (team === json.team) {
             if (!kickedOff && otherIsReady) {
               send("kickoff");
+            } else if (!game_locked) {
+              SHIFT_GEAR = json.gear;
+              document.getElementById("shift-gear").innerHTML = SHIFT_GEAR;
             }
           } else {
             if (data.val().gear === "ready") {

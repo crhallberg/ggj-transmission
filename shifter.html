@@ -46,7 +46,7 @@
             team: team,
             time: new Date().getTime()
           });
-          document.getElementById("id").innerHTML = ID;
+          document.getElementById("id").innerHTML = "TEAM " + team + " (" + ID + ")";
         });
 
         var raceRef = firebase.database().ref("races/" + raceKey);
