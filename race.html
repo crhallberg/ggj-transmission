@@ -10,6 +10,9 @@
     <script src="./firebase.js"></script>
   </head>
   <body>
+    <p>What a gorgeous game.</p>
+    <p>Ooooo. Dials.</p>
+    <p>Seconds: <span id="countdown"></span></p>
     <div id="modal" class="open">
       <h1 id="banner"></h1>
       <div id="other-ready"></div>
@@ -19,31 +22,86 @@
       var cupName = localStorage.getItem("race");
       var team = localStorage.getItem("team");
       var raceKey = localStorage.getItem("raceKey");
+
       document.getElementById("banner").innerHTML = cupName + " CUP";
       document.getElementById("other-ready").innerHTML = team === "A" ? "team b" : "team a";
       document.getElementById("ready").innerHTML = "TEAM " + team + " READY";
-      document.addEventListener("config-loaded", function raceIndicators() {
-        var raceRef = firebase.database().ref('races/' + raceKey);
-        raceRef.on('child_added', function(data) {
-          console.log(raceKey, data.val());
-          if (team == data.val().team) {
-            switch (data.val().gear) {
 
+      var countdown = document.getElementById("countdown");
+      function showCountdown(seconds) {
+        countdown.innerHTML = seconds;
+        if (seconds > 0) {
+          setTimeout(function nextSecond() {
+            showCountdown(seconds - 1)
+          }, 1000);
+        } else {
+          // UNLOCK GAME
+        }
+      }
+      var kickedOff = false;
+      function kickoff() {
+        document.getElementById("modal").classList.remove("open");
+        kickedOff = true;
+        var secondsTilStart = 3;
+        setTimeout(function delayCountDown() {
+          showCountdown(3);
+        }, 1000);
+      }
+
+      var isReady = false;
+      var otherIsReady = false;
+      document.addEventListener("config-loaded", function raceIndicators() {
+        var raceRef = firebase.database().ref("races/" + raceKey);
+
+        function send(gear) {
+          raceRef.push().set({
+            gear: gear,
+            team: team,
+            time: new Date().getTime()
+          });
+        }
+
+        var startTime = new Date().getTime();
+        raceRef.on('child_added', function(data) {
+          if (!data.val().time || data.val().time < startTime) {
+            return;
+          }
+          console.log(data.val());
+          if (data.key.length > 4) {
+            localStorage.setItem("startAt", data.key);
+          }
+          if (data.val().gear === "kickoff") {
+            kickoff();
+          }
+          if (team == data.val().team) {
+            if (!kickedOff && otherIsReady) {
+              send("kickoff");
             }
           } else {
             if (data.val().gear === "ready") {
+              otherIsReady = true;
               document.getElementById("other-ready").classList.add("ready");
+              if (!kickedOff && isReady) {
+                send("kickoff");
+              }
             } else if (data.val().gear === "not-ready") {
+              otherIsReady = false;
               document.getElementById("other-ready").classList.remove("ready");
             }
           }
         });
         document.getElementById("ready").addEventListener("mousedown", function clickReady() {
-          raceRef.push().set({ gear: "ready", team: team });
+          isReady = true;
+          this.classList.add("ready")
+          send("ready");
         }, false);
+        /*
         document.addEventListener("mouseup", function clickReady() {
+          isReady = false;
+          send("not-ready");
           raceRef.push().set({ gear: "not-ready", team: team });
         }, false);
+        */
       });
     </script>
   </body>
