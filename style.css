@@ -64,16 +64,16 @@ td:not(:first-child) {
   cursor: pointer;
   background: #80bbff;
 }
-.ui_button[data-disabled] {
+.ui_button[disabled] {
   background: #808080;
 }
-.ui_button[data-disabled]:hover {
-  cursor: default;
+.ui_button[disabled]:hover {
+  cursor: not-allowed;
 }
-.ui_button[data-success] {
+.ui_button.success {
   background: #4cd936;
 }
-.ui_button[data-success]:hover {
+.ui_button.success:hover {
   cursor: default;
 }
 
@@ -133,7 +133,7 @@ td:not(:first-child) {
   margin-left: 10px;
 }
 .role_button {
-  width: 130px;
+  width: 200px;
 }
 .role_icon {
   width: 20px;

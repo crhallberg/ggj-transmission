@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<title>Quack to the Future</title>
+		<link rel="stylesheet" type="text/css" href="style.css">
+		<link href="https://fonts.googleapis.com/css?family=Roboto+Condensed" rel="stylesheet">
+		<link href="https://fonts.googleapis.com/css?family=Niconne" rel="stylesheet">
+		<link href="https://fonts.googleapis.com/css?family=Oswald:400,700" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/4.9.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.9.0/firebase-database.js"></script>
+    <script src="./firebase.js"></script>
+	</head>
+	<body>
+		<div id="center_container">
+			<div id="race_welcome">Welcome to the...</div><br>
+			<div id="race_name">Slippery Canyon Cup</div><img id="trophy_cup" src="images/trophy.svg"/><br>
+			<br>
+			<br>
+			Select the role for this window...<br>
+			<br>
+			<div class="column">
+				<u>Team A</u><br>
+				<button disabled id="select-a-driver" data-team="A" data-role="driver" class="ui_button role_button">the driver</button><br>
+				<button class="ui_button role_button" data-team="A" data-role="shifter">a shifter</button><br>
+				<img class="role_icon team-a-driver" src="images/driver_inactive.svg"/>
+				<img class="role_icon team-a-shifter" src="images/shifter_inactive.svg"/>
+				<img class="role_icon team-a-shifter" src="images/shifter_inactive.svg"/>
+				<img class="role_icon team-a-shifter" src="images/shifter_inactive.svg"/>
+				<img class="role_icon team-a-shifter" src="images/shifter_inactive.svg"/>
+				<img class="role_icon team-a-shifter" src="images/shifter_inactive.svg"/>
+				<img class="role_icon team-a-shifter" src="images/shifter_inactive.svg"/>
+			</div>
+			<div class="column">
+				<u>Team B</u><br>
+				<button disabled id="select-b-driver" data-team="B" data-role="driver" class="ui_button role_button">the driver</button><br>
+				<button class="ui_button role_button" data-team="B" data-role="shifter">a shifter</button><br>
+				<img class="role_icon team-b-driver" src="images/driver_inactive.svg"/>
+				<img class="role_icon team-b-shifter" src="images/shifter_inactive.svg"/>
+				<img class="role_icon team-b-shifter" src="images/shifter_inactive.svg"/>
+				<img class="role_icon team-b-shifter" src="images/shifter_inactive.svg"/>
+				<img class="role_icon team-b-shifter" src="images/shifter_inactive.svg"/>
+				<img class="role_icon team-b-shifter" src="images/shifter_inactive.svg"/>
+				<img class="role_icon team-b-shifter" src="images/shifter_inactive.svg"/>
+			</div>
+		</div>
+
+    <script>
+      var cupName = localStorage.getItem("race");
+      var raceKey = localStorage.getItem("raceKey");
+      var roleKey, currentRole = false;
+
+      document.getElementById("race_name").innerHTML = cupName.split(" ")
+        .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+        .join(" ") + " Cup";
+
+      document.addEventListener("config-loaded", function leaderboard() {
+        roleKey = localStorage.getItem("roleKey");
+        if (!roleKey) {
+          roleKey = firebase.database().ref(raceKey + "/roles").push().key;
+          localStorage.setItem("roleKey", roleKey);
+        }
+
+        var buttons = document.querySelectorAll(".role_button");
+        for (var i = 0; i < buttons.length; i++) {
+          buttons[i].addEventListener("click", function clickRole() {
+            updates = {};
+            updates[roleKey] = { team: this.dataset.team, role: this.dataset.role };
+            firebase.database().ref().update(updates);
+            var prev = document.querySelector(".success");
+            if (prev) prev.classList.remove("success");
+            this.classList.add("success");
+          }, false);
+        }
+      }, false);
+    </script>
+	</body>
+</html>
