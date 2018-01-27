@@ -88,9 +88,9 @@
         firebase.database().ref("times").push().set({
           race: cupName,
           raceKey: raceKey,
-          time: end - START_TIME,
+          millis: end - START_TIME,
           team: team,
-          timestamp: end,
+          time: end,
         });
       }
 

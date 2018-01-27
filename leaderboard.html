@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="./style.css"/>
+    <script src="https://www.gstatic.com/firebasejs/4.9.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.9.0/firebase-database.js"></script>
+    <script src="./firebase.js"></script>
+    <style>
+      html { font-size: 16px; }
+      body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"; }
+      button {
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+        font-size: 2rem;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>LEADERBOARD</h1>
+    <p id="current-race"></p>
+    <p>Team A: <span id="team-a"></span></p>
+    <p>Team B: <span id="team-b"></span></p>
+
+    <script>
+      var loopTimer = false;
+      var startTime;
+      var currentEl = document.getElementById("current-race");
+      function formatTime(millis) {
+        var seconds = millis / 1000;
+        var minutes = Math.floor(seconds / 60);
+        seconds %= 60;
+        // Pad
+        if (minutes < 10) minutes = "0" + minutes;
+        if (seconds < 10) seconds = "0" + seconds.toFixed(3);
+        else seconds = seconds.toFixed(3);
+        // Display
+        return minutes + ":" + seconds;
+      }
+      function updateTimer() {
+        currentEl.innerHTML = formatTime(new Date().getTime() - startTime);
+        // Repeat
+        if (loopTimer) {
+          requestAnimationFrame(updateTimer);
+        }
+      }
+      var finished = { A: false, B: false };
+      function startTimer() {
+        finished = { A: false, B: false };
+        startTime = new Date().getTime();
+        loopTimer = true;
+        updateTimer();
+      }
+      function stopTimer(json) {
+        finished[json.team] = true;
+        document.getElementById("team-" + json.team.toLowerCase()).innerHTML = formatTime(json.millis);
+        loopTimer = !(finished["A"] && finished["B"]);
+      }
+
+      var all_times = [];
+      var newest = [];
+      document.addEventListener("config-loaded", function leaderboard() {
+        var startTime = new Date().getTime();
+        // Active timer
+        var raceRef = firebase.database().ref("races/");
+        raceRef.on('child_added', function(data) {
+          json = data.val();
+          if (!json.time || json.time < startTime) {
+            return;
+          }
+          if (json.gear === "kickoff") {
+            setTimeout(startTimer, 4000);
+          }
+        });
+        // Final times
+        var timesRef = firebase.database().ref("times");
+        var button = document.getElementById("shift");
+        timesRef.on('child_added', function(data) {
+          json = data.val();
+          if (!json.time || json.time < startTime) {
+            return;
+          }
+          all_times.append(json);
+          stopTimer(json);
+          updateLeaderboard();
+        });
+      }, false);
+    </script>
+  </body>
+</html>
