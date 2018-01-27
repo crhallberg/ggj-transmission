@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="./style.css"/>
+    <script src="https://www.gstatic.com/firebasejs/4.9.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.9.0/firebase-database.js"></script>
+    <script src="./firebase.js"></script>
+  </head>
+  <body>
+    <div id="modal" class="open">
+      <h1 id="banner"></h1>
+      <div id="other-ready"></div>
+      <button id="ready"></button>
+    </div>
+    <script>
+      var cupName = localStorage.getItem("race");
+      var team = localStorage.getItem("team");
+      var raceKey = localStorage.getItem("raceKey");
+      document.getElementById("banner").innerHTML = cupName + " CUP";
+      document.getElementById("other-ready").innerHTML = team === "A" ? "team b" : "team a";
+      document.getElementById("ready").innerHTML = "TEAM " + team + " READY";
+      document.addEventListener("config-loaded", function raceIndicators() {
+        var raceRef = firebase.database().ref('races/' + raceKey);
+        raceRef.on('child_added', function(data) {
+          console.log(raceKey, data.val());
+          if (team == data.val().team) {
+            switch (data.val().gear) {
+
+            }
+          } else {
+            if (data.val().gear === "ready") {
+              document.getElementById("other-ready").classList.add("ready");
+            } else if (data.val().gear === "not-ready") {
+              document.getElementById("other-ready").classList.remove("ready");
+            }
+          }
+        });
+        document.getElementById("ready").addEventListener("mousedown", function clickReady() {
+          raceRef.push().set({ gear: "ready", team: team });
+        }, false);
+        document.addEventListener("mouseup", function clickReady() {
+          raceRef.push().set({ gear: "not-ready", team: team });
+        }, false);
+      });
+    </script>
+  </body>
+</html>
+

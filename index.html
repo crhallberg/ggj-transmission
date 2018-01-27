@@ -4,31 +4,10 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="./style.css"/>
     <script src="https://www.gstatic.com/firebasejs/4.9.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/4.9.0/firebase-database.js"></script>
     <script src="./firebase.js"></script>
-
-    <style>
-      html { font-size: 16px; }
-      body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"; }
-      #modal {
-        position: fixed;
-        top: 0;
-        left: 0;
-        display: none;
-        width: 100%;
-        height: 100%;
-        padding: 2rem;
-        font-size: 2rem;
-        text-align: center;
-        background-color: #fff;
-      }
-      #modal.open { display: block; }
-      #modal b {
-        display: block;
-        font-size: 3rem;
-      }
-    </style>
   </head>
   <body>
     <h2>WELCOME TO THE</h2>
@@ -68,6 +47,9 @@
 
       document.getElementById("start").addEventListener("click", function connectToRace() {
         var cupName = nameField.value.replace(/[^a-zA-Z0-9]+/g, "-").toLowerCase();
+        localStorage.setItem("race", nameField.value);
+        localStorage.setItem("raceKey", cupName);
+
         firebase.database().ref('races/' + cupName).once('value').then(exists => {
           var modal = document.getElementById("modal");
           if (!exists.val()) {
@@ -75,8 +57,7 @@
             firebase.database().ref('races').child(cupName).set({ gear: "start", team: "A" });
             var checkLoop = setInterval(function check() {
               firebase.database().ref('races/' + cupName).once('value').then(latest => {
-                localStorage.addItem("race", nameField.value);
-                localStorage.addItem("team", "A");
+                localStorage.setItem("team", "A");
                 if (latest.val().team === "B") {
                   clearInterval(checkLoop);
                   modal.innerHTML = "You are Team<b>A</b>READY";
@@ -89,8 +70,7 @@
           } else {
             modal.innerHTML = "You are Team<b>B</b>";
             firebase.database().ref('races').child(cupName).set({ gear: "start", team: "B" });
-            localStorage.addItem("race", nameField.value);
-            localStorage.addItem("team", "B");
+            localStorage.setItem("team", "B");
             setTimeout(function showTeam() {
               window.location = "race.html";
             }, 2000);
@@ -99,7 +79,7 @@
         });
       }, false);
 
-      document.getElementById("start").addEventListener("click", function connectToRace() {
+      // document.getElementById("start").addEventListener("click", function connectToRace() {
     </script>
   </body>
 </html>
