@@ -42,7 +42,7 @@
         "CANYON",
         "MARSH",
         "AERIAL",
-        "SPLOOSH&trade;",
+        "SPLOOSH(tm)",
         "WHATEVER",
       ];
       function newName() {
@@ -62,7 +62,7 @@
           var modal = document.getElementById("modal");
           if (!exists.val()) {
             modal.innerHTML = "You are Team<b>A</b>";
-            firebase.database().ref('races').child(cupName).set({ gear: "start", team: "A", time: new Date() });
+            firebase.database().ref('races/' + cupName).push().set({ gear: "start", team: "A", time: new Date() });
             var checkLoop = setInterval(function check() {
               firebase.database().ref('races/' + cupName).once('value').then(latest => {
                 localStorage.setItem("team", "A");
@@ -77,7 +77,7 @@
             }, 1000);
           } else {
             modal.innerHTML = "You are Team<b>B</b>";
-            firebase.database().ref('races').child(cupName).set({ gear: "start", team: "B", time: new Date() });
+            firebase.database().ref('races/' + cupName).push().set({ gear: "start", team: "B", time: new Date() });
             localStorage.setItem("team", "B");
             setTimeout(function showTeam() {
               window.location = "race.html";

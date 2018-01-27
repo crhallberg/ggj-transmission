@@ -18,4 +18,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
   display: block;
   font-size: 3rem;
 }
+.debug { display: none; }
 .ready { color: red; }
+.current { background-color: green; }

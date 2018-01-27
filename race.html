@@ -12,9 +12,11 @@
     <script src="./topgeese.js"></script>
   </head>
   <body>
+    <p><a href="index.html">&lt; New Race</a></p>
     <p>What a gorgeous game.</p>
     <p>Ooooo. Dials.</p>
     <p>Seconds: <span id="countdown"></span></p>
+    <button id="resend-order" class="debug">Debug Order</button>
     <div id="modal" class="open">
       <h1 id="banner"></h1>
       <div id="other-ready"></div>
@@ -25,6 +27,13 @@
       var cupName = localStorage.getItem("race");
       var team = localStorage.getItem("team");
       var raceKey = localStorage.getItem("raceKey");
+
+      if (team === "A") {
+        document.getElementById("resend-order").classList.remove("debug");
+        document.getElementById("resend-order").addEventListener("click", function debugOrder() {
+          showCountdown(0);
+        }, false);
+      }
 
       document.getElementById("banner").innerHTML = cupName + " CUP";
       document.getElementById("other-ready").innerHTML = team === "A" ? "team b" : "team a";

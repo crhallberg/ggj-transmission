@@ -19,13 +19,14 @@
     </style>
   </head>
   <body>
+    <p><a href="index.html">&lt; New Race</a></p>
     <h1 id="id"></h1>
     <button id="shift">SHIFT</button>
     <span id="race-name"></span>
 
     <script>
       var ID = -1;
-      var gearValue = -1;
+      var GEAR_VALUE = -1;
       var cupName = localStorage.getItem("race");
       var team = localStorage.getItem("team");
       var raceKey = localStorage.getItem("raceKey");
@@ -50,28 +51,39 @@
 
         var raceRef = firebase.database().ref("races/" + raceKey);
         var startTime = new Date().getTime();
+        var button = document.getElementById("shift");
         raceRef.on('child_added', function(data) {
           json = data.val();
-          if (!json.time || !json.order || json.time < startTime) {
+          if (!json.time || json.time < startTime) {
             return;
           }
-          var button = document.getElementById("shift");
-          gearValue = json.order[ID];
-          button.innerHTML = gearValue;
-          button.addEventListener("click", function sendShift() {
-            raceRef.push().set({
-              gear: gearValue,
-              team: team,
-              time: new Date().getTime()
-            });
-          }, false);
-          document.addEventListener("keydown", function sendShiftKey() {
-            raceRef.push().set({
-              gear: gearValue,
-              team: team,
-              time: new Date().getTime()
-            });
-          }, false);
+          console.log(json);
+          if (json.gear === "order") {
+            GEAR_VALUE = json.order[ID];
+            button.innerHTML = GEAR_VALUE;
+            button.addEventListener("click", function sendShift() {
+              console.log("SHIFT", GEAR_VALUE);
+              raceRef.push().set({
+                gear: GEAR_VALUE,
+                team: team,
+                time: new Date().getTime()
+              });
+            }, false);
+            document.addEventListener("keydown", function sendShiftKey() {
+              console.log("SHIFT", GEAR_VALUE);
+              raceRef.push().set({
+                gear: GEAR_VALUE,
+                team: team,
+                time: new Date().getTime()
+              });
+            }, false);
+          } else if (json.team === team) { // Highlight current gear
+            if (json.gear === GEAR_VALUE) {
+              document.body.classList.add("current");
+            } else {
+              document.body.classList.remove("current");
+            }
+          }
         });
       }, false);
     </script>
