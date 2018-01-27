@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="./style.css"/>
+    <script src="https://www.gstatic.com/firebasejs/4.9.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.9.0/firebase-database.js"></script>
+    <script src="./firebase.js"></script>
+    <style>
+      html { font-size: 16px; }
+      body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"; }
+      button {
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+        font-size: 2rem;
+      }
+    </style>
+  </head>
+  <body>
+    <h1 id="id"></h1>
+    <button id="shift">SHIFT</button>
+    <span id="race-name"></span>
+
+    <script>
+      var ID = -1;
+      var gearValue = -1;
+      var cupName = localStorage.getItem("race");
+      var team = localStorage.getItem("team");
+      var raceKey = localStorage.getItem("raceKey");
+
+      document.getElementById("race-name").innerHTML = cupName + " CUP";
+
+      document.addEventListener("config-loaded", function raceIndicators() {
+        var shiftersRef = firebase.database().ref("races/" + raceKey + "/shifters");
+        firebase.database().ref("races/" + raceKey + "/shifters").once('value').then(json => {
+          if (json.val()) {
+            ID = Object.keys(json.val()).length;
+          } else {
+            ID = 0;
+          }
+          shiftersRef.push().set({
+            id: id,
+            team: team,
+            time: new Date().getTime()
+          });
+          document.getElementById("id").innerHTML = ID;
+        });
+
+        var raceRef = firebase.database().ref("races/" + raceKey);
+        var startTime = new Date().getTime();
+        raceRef.on('child_added', function(data) {
+          json = data.val();
+          if (!json.time || !json.order || json.time < startTime) {
+            return;
+          }
+          var button = document.getElementById("shift");
+          gearValue = json.order[ID];
+          button.innerHTML = gearValue;
+          button.addEventListener("click", function sendShift() {
+            raceRef.push().set({
+              gear: gearValue,
+              team: team,
+              time: new Date().getTime()
+            });
+          }, false);
+          document.addEventListener("keydown", function sendShiftKey() {
+            raceRef.push().set({
+              gear: gearValue,
+              team: team,
+              time: new Date().getTime()
+            });
+          }, false);
+        });
+      }, false);
+    </script>
+  </body>
+</html>

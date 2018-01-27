@@ -17,19 +17,21 @@
     <hr/>
     <div><button id="start">START!</button></div>
     <hr/>
-    <button href="shifter.html#A">add TEAM A shifter</button>
-    <button href="shifter.html#B">add TEAM B shifter</button>
+    <button id="add-a-shifter">add TEAM A shifter</button>
+    <button id="add-b-shifter">add TEAM B shifter</button>
     <div id="modal"></div>
     <script>
       var nameField = document.getElementById("name");
       var adjs = [
-        "HAPPY",
-        "BULLSHIT",
         "AGGRESSIVE",
-        "SLIPPERY",
-        "ZEN",
+        "HAPPY",
         "QUIET",
+        "SHORT",
+        "SLIPPERY",
+        "STUPID",
+        "SUPER",
         "WORLD",
+        "ZEN",
       ];
       var nouns = [
         "LLAMA",
@@ -39,14 +41,20 @@
         "TORNADO",
         "CANYON",
         "MARSH",
+        "AERIAL",
+        "SPLOOSH&trade;",
+        "WHATEVER",
       ];
       function newName() {
         nameField.value = adjs[Math.floor(Math.random() * adjs.length)] + " " + nouns[Math.floor(Math.random() * nouns.length)];
       }
       newName();
 
+      function getKey() {
+        return nameField.value.replace(/[^a-zA-Z0-9]+/g, "-").toLowerCase();
+      }
       document.getElementById("start").addEventListener("click", function connectToRace() {
-        var cupName = nameField.value.replace(/[^a-zA-Z0-9]+/g, "-").toLowerCase();
+        var cupName = getKey();
         localStorage.setItem("race", nameField.value);
         localStorage.setItem("raceKey", cupName);
 
@@ -57,9 +65,6 @@
             firebase.database().ref('races').child(cupName).set({ gear: "start", team: "A", time: new Date() });
             var checkLoop = setInterval(function check() {
               firebase.database().ref('races/' + cupName).once('value').then(latest => {
-                if (latest.key.length > 4) {
-                  localStorage.setItem("startAt", latest.key);
-                }
                 localStorage.setItem("team", "A");
                 if (latest.val().team === "B") {
                   clearInterval(checkLoop);
@@ -76,13 +81,24 @@
             localStorage.setItem("team", "B");
             setTimeout(function showTeam() {
               window.location = "race.html";
-            }, 1000);
+            }, 2000);
           }
           modal.classList.add("open");
         });
       }, false);
 
-      // document.getElementById("start").addEventListener("click", function connectToRace() {
+      document.getElementById("add-a-shifter").addEventListener("click", function addAShifter() {
+        localStorage.setItem("race", nameField.value);
+        localStorage.setItem("raceKey", getKey());
+        localStorage.setItem("team", "A");
+        window.location = "shifter.html";
+      }, false);
+      document.getElementById("add-b-shifter").addEventListener("click", function addAShifter() {
+        localStorage.setItem("race", nameField.value);
+        localStorage.setItem("raceKey", getKey());
+        localStorage.setItem("team", "B");
+        window.location = "shifter.html";
+      }, false);
     </script>
   </body>
 </html>

@@ -17,6 +17,7 @@
       <h1 id="banner"></h1>
       <div id="other-ready"></div>
       <button id="ready"></button>
+      <p>Shifters: <span id="shifters">0</span>
     </div>
     <script>
       var cupName = localStorage.getItem("race");
@@ -28,14 +29,33 @@
       document.getElementById("ready").innerHTML = "TEAM " + team + " READY";
 
       var countdown = document.getElementById("countdown");
+      var shifterData = { A: 0, B: 0 };
       function showCountdown(seconds) {
         countdown.innerHTML = seconds;
         if (seconds > 0) {
           setTimeout(function nextSecond() {
             showCountdown(seconds - 1)
           }, 1000);
-        } else {
+        } else if (team === "A") {
           // UNLOCK GAME
+          var min = Math.min(shifterData["A"], shifterData["B"]);
+          var max = Math.max(shifterData["A"], shifterData["B"]);
+          var gears = [];
+          for (var i = 0; i < min; i++) {
+            var r = Math.floor(Math.random() * min);
+            var t = typeof gears[i] === "undefined" ? (i + 1) : gears[i];
+            gears[i] = typeof gears[r] === "undefined" ? (r + 1) : gears[r];
+            gears[r] = t;
+          }
+          for (var i = min; i < max; i++) {
+            gears.push(i + 1);
+          }
+          firebase.database().ref("races/" + raceKey).push().set({
+            gear: "order",
+            order: gears,
+            time: new Date().getTime()
+          });
+          alert(gears);
         }
       }
       var kickedOff = false;
@@ -70,7 +90,7 @@
           if (data.key.length > 4) {
             localStorage.setItem("startAt", data.key);
           }
-          if (data.val().gear === "kickoff") {
+          if (!kickedOff && data.val().gear === "kickoff") {
             kickoff();
           }
           if (team == data.val().team) {
@@ -90,6 +110,14 @@
             }
           }
         });
+
+        firebase.database().ref("races/" + raceKey + "/shifters").on('child_added', data => {
+          json = data.val();
+          shifterData[json.team] += 1;
+          document.getElementById("shifters").innerHTML = shifterData[team];
+          console.log(shifterData, team);
+        });
+
         document.getElementById("ready").addEventListener("mousedown", function clickReady() {
           isReady = true;
           this.classList.add("ready")
