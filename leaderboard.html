@@ -10,17 +10,13 @@
 		<link href="https://fonts.googleapis.com/css?family=Roboto+Condensed" rel="stylesheet">
 		<link href="https://fonts.googleapis.com/css?family=Niconne" rel="stylesheet">
 		<link href="https://fonts.googleapis.com/css?family=Oswald:400,700" rel="stylesheet">
-
-    <script src="https://www.gstatic.com/firebasejs/4.9.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/4.9.0/firebase-database.js"></script>
-    <script src="./firebase.js"></script>
   </head>
   <body>
 		<div id="center_container">
 			<div id="current_race">Current race...</div>
 			<div id="leaderboard_race_name">Slippery Canyon Cup</div><br>
 			Time:
-			<div id="race_time">00:12.183</div>
+			<div id="race_time">00:00.000</div>
       <div class="column wide">
         Team A:<br/>
         <span id="team-A"></span>
@@ -44,6 +40,9 @@
 			</table>
 		</div>
 
+    <script src="https://www.gstatic.com/firebasejs/4.9.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.9.0/firebase-database.js"></script>
+    <script src="./firebase.js"></script>
     <script>
       var loopTimer = false;
       var startTime;
@@ -115,33 +114,45 @@
         finished[json.team] = true;
         document.getElementById("team-" + json.team).innerHTML = formatTime(json.millis);
         loopTimer = !(finished["A"] && finished["B"]);
+        if (!loopTimer) {
+          updateLeaderboard();
+        }
       }
+
       document.addEventListener("config-loaded", function leaderboard() {
         var startTime = new Date().getTime();
 
         // TODO: Capture races correctly
-
-        // Active timer
-        var raceRef = firebase.database().ref("races/");
-        raceRef.on('child_added', function(data) {
-          json = data.val();
-          if (!json.time || json.time < startTime) {
+        var startTime = new Date().getTime();
+        var currentRace = null;
+        firebase.database().ref().on("child_added", data => {
+          var json = data.val();
+          if (!json.created || json.created < startTime) {
             return;
           }
-          if (json.gear === "kickoff") {
-            setTimeout(startTimer, 4000);
+          if (currentRace) {
+            firebase.database().ref(currentRace + "/kickoff").off("value");
+            firebase.database().ref(currentRace + "/times").off("child_added");
           }
-        });
-        // Final times
-        var timesRef = firebase.database().ref("times");
-        var button = document.getElementById("shift");
-        timesRef.on('child_added', function(data) {
-          json = data.val();
-          if (!json.time || json.time < startTime) {
-            return;
-          }
-          all_times.append(json);
-          stopTimer(json);
+          currentRace = data.key;
+          firebase.database().ref(currentRace + "/kickoff").on("value", data => {
+            var json = data.val();
+            if (!json.time || json.time < startTime) {
+              return;
+            }
+            if (son.kickoff) {
+              setTimeout(startTimer, 4000);
+            }
+          });
+          // Final times
+          firebase.database().ref(currentRace + "/times").on('child_added', function(data) {
+            json = data.val();
+            if (!json.time || json.time < startTime) {
+              return;
+            }
+            all_times.append(json);
+            stopTimer(json);
+          });
         });
       }, false);
     </script>

@@ -100,7 +100,7 @@
 
       function submitTime() {
         var end = new Date().getTime();
-        firebase.database().ref("times").push().set({
+        firebase.database().ref(raceKey + "/times").push().set({
           race: cupName,
           raceKey: raceKey,
           millis: end - START_TIME,
