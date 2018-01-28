@@ -73,7 +73,7 @@ function draw()
   if(stalled)
   {
 	  stalled = false;
-	  stallSound.play();
+	  stalled.play();
   }
 }
 

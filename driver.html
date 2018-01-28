@@ -18,8 +18,9 @@
     <p><a href="index.html">&lt; New Race</a></p>
     <p>Seconds: <span id="countdown"></span></p>
     <p>Gear: <span id="shift-gear"></span></p>
+    <button id="finish-debug">Finish</button>
     <button id="resend-order" class="debug">Debug Order</button>
-    <div id="modal" class=""><!-- Justin: remove open to hide -->
+    <div id="modal" class="open"><!-- Justin: remove open to hide -->
       <p>waiting for the other players...</p>
       <p>
         <span id="team-a-shifters"></span>
@@ -31,7 +32,6 @@
       <p><a href="#" id="manual_check">check</a></p>
     </div>
     <script>
-      var startTime = new Date().getTime();
       var team = localStorage.getItem("team");
       var raceKey = localStorage.getItem("room_code");
       var roleKey = localStorage.getItem("role_key");
@@ -101,17 +101,17 @@
       function submitTime() {
         var end = new Date().getTime();
         firebase.database().ref(raceKey + "/times").push().set({
-          race: cupName,
+          race: localStorage.getItem("race_name"),
           raceKey: raceKey,
           millis: end - START_TIME,
           team: team,
           time: end,
         });
       }
+      document.getElementById("finish-debug").addEventListener("click", submitTime, false);
 
       document.addEventListener("config-loaded", function raceIndicators() {
         // LISTEN FOR KICKOFF
-        var startTime = new Date().getTime();
         firebase.database().ref(raceKey + "/kickoff").on("value", data => {
           var json = data.val();
           if (!json.time || json.time < startTime) {

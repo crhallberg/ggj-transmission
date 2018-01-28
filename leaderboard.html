@@ -14,7 +14,7 @@
   <body>
 		<div id="center_container">
 			<div id="current_race">Current race...</div>
-			<div id="leaderboard_race_name">Slippery Canyon Cup</div><br>
+			<div id="leaderboard_race_name">Searching...</div><br>
 			Time:
 			<div id="race_time">00:00.000</div>
       <div class="column wide">
@@ -45,7 +45,7 @@
     <script src="./firebase.js"></script>
     <script>
       var loopTimer = false;
-      var startTime;
+      var timerStart;
       var timerEl = document.getElementById("race_time");
       function formatTime(millis) {
         var seconds = millis / 1000;
@@ -57,21 +57,6 @@
         else seconds = seconds.toFixed(3);
         // Display
         return minutes + ":" + seconds;
-      }
-      var teamATimeEl = document.getElementById("team-A");
-      var teamBTimeEl = document.getElementById("team-B");
-      function updateTimer() {
-        timerEl.innerHTML = formatTime(new Date().getTime() - startTime);
-        if (!finished["A"]) {
-          teamATimeEl.innerHTML = formatTime(Math.random() * 5940000);
-        }
-        if (!finished["B"]) {
-          teamBTimeEl.innerHTML = formatTime(Math.random() * 5940000);
-        }
-        // Repeat
-        if (loopTimer) {
-          requestAnimationFrame(updateTimer);
-        }
       }
 
       var all_times = [];
@@ -92,7 +77,7 @@
         }
         var table = document.getElementById("table");
         table.innerHTML = "";
-        for (var i = 0; i < 5; i++) {
+        for (var i = 0; i < 5 && i < all_times.length; i++) {
           table.innerHTML += "<tr";
           if (i === newestA || i === newestB) {
             table.innerHTML += ' class="new"';
@@ -104,9 +89,24 @@
       }
 
       var finished = { A: false, B: false };
+      var teamATimeEl = document.getElementById("team-A");
+      var teamBTimeEl = document.getElementById("team-B");
+      function updateTimer() {
+        timerEl.innerHTML = formatTime(new Date().getTime() - timerStart);
+        if (!finished["A"]) {
+          teamATimeEl.innerHTML = formatTime(Math.random() * 5940000);
+        }
+        if (!finished["B"]) {
+          teamBTimeEl.innerHTML = formatTime(Math.random() * 5940000);
+        }
+        // Repeat
+        if (loopTimer) {
+          requestAnimationFrame(updateTimer);
+        }
+      }
       function startTimer() {
         finished = { A: false, B: false };
-        startTime = new Date().getTime();
+        timerStart = new Date().getTime();
         loopTimer = true;
         updateTimer();
       }
@@ -120,10 +120,7 @@
       }
 
       document.addEventListener("config-loaded", function leaderboard() {
-        var startTime = new Date().getTime();
-
         // TODO: Capture races correctly
-        var startTime = new Date().getTime();
         var currentRace = null;
         firebase.database().ref().on("child_added", data => {
           var json = data.val();
@@ -133,14 +130,22 @@
           if (currentRace) {
             firebase.database().ref(currentRace + "/kickoff").off("value");
             firebase.database().ref(currentRace + "/times").off("child_added");
+            loopTimer = false;
+            setTimeout(function() {
+              timerEl.innerHTML = formatTime(0);
+              document.getElementById("team-A").innerHTML = formatTime(0);
+              document.getElementById("team-B").innerHTML = formatTime(0);
+            }, 100);
           }
           currentRace = data.key;
+          document.getElementById("leaderboard_race_name").innerHTML = json.name + " Cup";
           firebase.database().ref(currentRace + "/kickoff").on("value", data => {
             var json = data.val();
+            console.log(json);
             if (!json.time || json.time < startTime) {
               return;
             }
-            if (son.kickoff) {
+            if (json.kickoff) {
               setTimeout(startTimer, 4000);
             }
           });
@@ -150,7 +155,7 @@
             if (!json.time || json.time < startTime) {
               return;
             }
-            all_times.append(json);
+            all_times.push(json);
             stopTimer(json);
           });
         });
