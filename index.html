@@ -39,11 +39,12 @@
 
       function connectToRace() {
         firebase.database().ref(codeField.value).once('value').then(exists => {
-          localStorage.setItem("room_code", codeField.value.toUpperCase());
+          var room_code = codeField.value.toUpperCase();
+          localStorage.setItem("room_code", room_code);
           if (!exists.val()) {
             var cupName = getRandomName();
             localStorage.setItem("race_name", cupName);
-            firebase.database().ref(codeField.value).set({
+            firebase.database().ref(room_code).set({
               name: cupName,
               kickoff: { kickoff: false },
               roles: [],
