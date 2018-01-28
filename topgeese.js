@@ -4,6 +4,8 @@ var GAME_LOCKED = true;
 var CURRENT_GEAR = -1;
 var START_TIME;
 var engine;
+var stallSound;
+var stalled = false;
 
 function preloadPhaser()
 {
@@ -19,11 +21,12 @@ function preloadPhaser()
 function preload()
 {
 	engine = loadSound('engine.wav');
+	stallSound = loadSound('stall.wav');
 }
 
 function setup()
 {
-	engine.loop();
+	
 }
 
 
@@ -53,6 +56,15 @@ function draw()
   //console.log(speed);
   speed = constrain(speed, 0.01, 4);
   engine.rate(speed);
+  if(GAME_LOCKED === false && engine.isPlaying() === false)
+  {
+	  engine.loop();
+  }
+  if(stalled)
+  {
+	  stalled = false;
+	  stalled.play();
+  }
 }
 
 
@@ -115,6 +127,7 @@ function update()
 		tach = 1000;
 		needle.angle = 0;
 		console.log('STALLED');
+		stalled = true;
 	}
 }
 
