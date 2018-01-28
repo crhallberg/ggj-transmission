@@ -81,8 +81,8 @@ function create()
 	road = game.add.sprite(0,0,'road');
 	secondRoad = game.add.sprite(800,0,'road');
 	car = game.add.sprite(0,300,'car1');
-	game.add.sprite(674,474,'tach');
-	needle = game.add.sprite(740,544,'needle');
+	game.add.sprite(548,348,'tach');
+	needle = game.add.sprite(680,488,'needle');
 	needle.anchor.setTo(.8,.5);
 
 	arrows = game.input.keyboard.createCursorKeys();
@@ -133,11 +133,9 @@ function driveOnACurve()
 	// console.log('GEAR: ' + gear, ACC);
 	velocity += ACC;
 	var theta = 180 * ACC_SPLIT / ACC_PERIOD;
-	if (gear == 6) {
-	  theta = Math.min(random(100, 120), theta);
-	}
+    theta = Math.min(Math.random() * 10 + 120, theta);
 	needle.angle = theta;
-	if (gear > 0) {
+	if (gear > 0 && ACC_SPLIT < ACC_PERIOD) {
 		ACC_SPLIT += 1;
 	}
 }
