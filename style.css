@@ -100,6 +100,7 @@ td:not(:first-child) {
 
 #logo {
   width: 50%;
+  margin-top: 2rem;
 }
 
 /* race_setup.html */

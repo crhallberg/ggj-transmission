@@ -18,8 +18,9 @@
     <p><a href="index.html">&lt; New Race</a></p>
     <p>Seconds: <span id="countdown"></span></p>
     <p>Gear: <span id="shift-gear"></span></p>
+    <button id="finish-debug">Finish</button>
     <button id="resend-order" class="debug">Debug Order</button>
-    <div id="modal" class="open">
+    <div id="modal" class="">
       <p>waiting for the other players...</p>
       <p>
         <span id="team-a-shifters"></span>
@@ -100,13 +101,14 @@
       function submitTime() {
         var end = new Date().getTime();
         firebase.database().ref(raceKey + "/times").push().set({
-          race: cupName,
+          race: localStorage.getItem("race_name"),
           raceKey: raceKey,
           millis: end - START_TIME,
           team: team,
           time: end,
         });
       }
+      document.getElementById("finish-debug").addEventListener("click", submitTime, false);
 
       document.addEventListener("config-loaded", function raceIndicators() {
         // LISTEN FOR KICKOFF
