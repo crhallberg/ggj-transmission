@@ -39,7 +39,7 @@
 
       document.getElementById("start").addEventListener("click", function connectToRace() {
         firebase.database().ref(codeField.value).once('value').then(exists => {
-          localStorage.setItem("room_code", codeField.value);
+          localStorage.setItem("room_code", codeField.value.toUpperCase());
           if (!exists.val()) {
             var cupName = getRandomName();
             localStorage.setItem("race_name", cupName);
