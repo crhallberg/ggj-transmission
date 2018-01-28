@@ -130,7 +130,16 @@
             // UPDATE HEADERS
             // (here for loading and updated names)
             document.getElementById("room_code").innerHTML = "Room Code: " + raceKey;
-            document.getElementById("race_name").innerHTML = cupName + " Cup";
+            if (cupName) {
+              document.getElementById("race_name").innerHTML = cupName + " Cup";
+            }
+            // Save to localhost
+            localStorage.setItem("attendance", JSON.stringify({
+              "driver_a": false, // to be corrected later
+              "driver_b": false,
+              "shifters_a": shiftersA,
+              "shifters_b": shiftersB,
+            }));
           });
         }
 
@@ -160,22 +169,24 @@
         // Ready button
         document.getElementById("ready_button").addEventListener("click", function readyButton() {
           localStorage.setItem("team", currentRole.team);
-          var updates = {};
-          updates[raceKey + "/ready/" + roleKey] = {
+          firebase.database().ref(raceKey + "/setup").push().set({
             team: currentRole.team,
-            role: currentRole.role,
-          };
-          firebase.database().ref().update(updates);
+            time: new Date().getTime(),
+          });
         });
-        firebase.database().ref(raceKey + "/ready").on("child_added", data => {
+        function jump(data) {
           var json = data.val();
           if (!json.time || json.time < startTime) {
             return;
           }
-          localStorage.setItem("room_name", cupName);
-          localStorage.setItem("team", currentRole.team);
-          window.location = currentRole.role + ".html";
-        });
+          if (currentRole.team === json.team) {
+            localStorage.setItem("race_name", cupName);
+            localStorage.setItem("team", currentRole.team);
+            window.location = currentRole.role + ".html";
+          }
+        }
+        firebase.database().ref(raceKey + "/setup").on("child_added", jump);
+        firebase.database().ref(raceKey + "/setup").on("child_changed", jump);
       }, false);
     </script>
 	</body>
