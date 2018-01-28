@@ -1,5 +1,189 @@
-<head>
-	<title>Top Geese</title>
-	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/phaser/2.4.8/phaser.min.js"></script>
-	<script type="text/javascript" src="topgeese.js"></script>
-</head>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<title>Quack to the Future</title>
+    <link rel="stylesheet" href="./style.css"/>
+    <script src="https://www.gstatic.com/firebasejs/4.9.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.9.0/firebase-database.js"></script>
+    <script src="./firebase.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/phaser/2.4.8/phaser.min.js"></script>
+    <script src="./topgeese.js"></script>
+  </head>
+  <body>
+    <p><a href="index.html">&lt; New Race</a></p>
+    <p>Seconds: <span id="countdown"></span></p>
+    <p>Gear: <span id="shift-gear"></span></p>
+    <button id="resend-order" class="debug">Debug Order</button>
+    <div id="modal" class="open">
+      <p>waiting for the other players...</p>
+      <p>
+        <span id="team-a-shifters"></span>
+        <img class="role_icon team-A-driver" src="images/driver_inactive.svg"/>
+        |
+        <img class="role_icon team-B-driver" src="images/driver_inactive.svg"/>
+        <span id="team-b-shifters"></span>
+      </p>
+      <p><a href="#" id="manual_check">check</a></p>
+    </div>
+    <script>
+      var startTime = new Date().getTime();
+      var team = localStorage.getItem("team");
+      var raceKey = localStorage.getItem("room_code");
+      var roleKey = localStorage.getItem("role_key");
+      // Setup attendance
+      var attendance = JSON.parse(localStorage.getItem("attendance"));
+      var sa_el = document.getElementById("team-a-shifters");
+      for (var i = attendance.shifters_a; i--;) {
+        sa_el.innerHTML += '<img class="role_icon team-A-' + i + '" src="images/shifter_inactive.svg"/>';
+      }
+      var sb_el = document.getElementById("team-b-shifters");
+      for (var i = 0; i < attendance.shifters_b; i++) {
+        sb_el.innerHTML += '<img class="role_icon team-B-' + i + '" src="images/shifter_inactive.svg"/>';
+      }
+
+      var countdown = document.getElementById("countdown");
+      function showCountdown(seconds) {
+        countdown.innerHTML = seconds;
+        if (seconds > 0) {
+          setTimeout(function nextSecond() {
+            showCountdown(seconds - 1)
+          }, 1000);
+        } else {
+
+          GAME_LOCKED = false;
+          START_TIME = new Date().getTime();
+
+          if (team === "A") {
+            // UNLOCK GAME
+            firebase.database().ref(raceKey + "/order").set({
+              order: shifterOrder,
+              time: new Date().getTime(),
+            });
+          }
+        }
+      }
+      var kickedOff = false;
+      var shifterOrder = []
+      function kickoff() {
+        kickedOff = true;
+        // Reveal game
+        document.getElementById("modal").classList.remove("open");
+        // Start countdown
+        var secondsTilStart = 3;
+        setTimeout(function delayCountDown() {
+          showCountdown(3);
+        }, 1000);
+        // Create order
+        var attendance = JSON.parse(localStorage.getItem("attendance"));
+        var min = Math.min(attendance.shifters_a, attendance.shifters_b);
+        var max = Math.max(attendance.shifters_a, attendance.shifters_b);
+        for (var i = 0; i < min; i++) {
+          var r = Math.floor(Math.random() * min);
+          var t = typeof shifterOrder[i] === "undefined"
+            ? (i + 1)
+            : shifterOrder[i];
+          shifterOrder[i] = typeof shifterOrder[r] === "undefined"
+            ? (r + 1)
+            : shifterOrder[r];
+          shifterOrder[r] = t;
+        }
+        console.log("ORDER", shifterOrder);
+        for (var i = min; i < max; i++) {
+          shifterOrder.push(i + 1);
+        }
+      }
+
+      function submitTime() {
+        var end = new Date().getTime();
+        firebase.database().ref("times").push().set({
+          race: cupName,
+          raceKey: raceKey,
+          millis: end - START_TIME,
+          team: team,
+          time: end,
+        });
+      }
+
+      document.addEventListener("config-loaded", function raceIndicators() {
+        // LISTEN FOR KICKOFF
+        var startTime = new Date().getTime();
+        firebase.database().ref(raceKey + "/kickoff").on("value", data => {
+          var json = data.val();
+          if (!json.time || json.time < startTime) {
+            return;
+          }
+          if (!kickedOff && json.kickoff) {
+            kickoff();
+          }
+        });
+        var readyRef = firebase.database().ref(raceKey + "/ready");
+        var alreadyReady = [];
+        function handleReady(data) {
+          var json = data.val();
+          if (alreadyReady.indexOf(data.key) > -1) {
+            return;
+          }
+          alreadyReady.push(data.key);
+          var id = json.role === "shifter" ? json.id : "driver";
+          // console.log(".team-" + json.team + "-" + id);
+          document.querySelector(".team-" + json.team + "-" + id).src = "images/" + json.role + ".svg";
+
+          if (team === "B") {
+            return; // just team A for the kickoff
+          }
+
+          if (json.team === "A") {
+            if (json.role === "driver") {
+              attendance.driver_a = true;
+            } else {
+              attendance.shifters_a -= 1;
+            }
+          } else {
+            if (json.role === "driver") {
+              attendance.driver_b = true;
+            } else {
+              attendance.shifters_b -= 1;
+            }
+          }
+          if (
+            attendance.driver_a
+            && attendance.driver_b
+            && attendance.shifters_a === 0
+            && attendance.shifters_b === 0
+          ) {
+            firebase.database().ref(raceKey + "/kickoff").set({
+              kickoff: true,
+              time: new Date().getTime()
+            });
+          }
+        }
+        readyRef.on("child_added", handleReady);
+        readyRef.on("child_changed", handleReady);
+        function recheck() {
+          firebase.database().ref(raceKey + "/ready").once("value").then(data => data.forEach(handleReady));
+        }
+        document.getElementById("manual_check").addEventListener("click", recheck, false);
+        recheck();
+
+        var update = {};
+        update[roleKey] = { team: team, role: "driver", time: new Date().getTime() };
+        readyRef.update(update);
+
+        firebase.database().ref(raceKey + "/shifts").on('child_added', data => {
+          var json = data.val();
+          if (!json.time || json.time < startTime) {
+            return;
+          }
+          console.log("SHIFT", json);
+          if (json.team === team) {
+            CURRENT_GEAR = json.gear;
+            document.getElementById("shift-gear").innerHTML = CURRENT_GEAR;
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

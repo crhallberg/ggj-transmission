@@ -4,101 +4,58 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<title>Quack to the Future</title>
     <link rel="stylesheet" href="./style.css"/>
+		<link href="https://fonts.googleapis.com/css?family=Roboto+Condensed" rel="stylesheet"/>
+  </head>
+  <body>
+		<div id="center_container">
+			<img id="logo" src="images/logo.png"/><br>
+			Enter new or existing race code:<br>
+			<input id="race_code" type="text">
+      <a href="#" id="shuffle_icon"><img class="role_icon" src="images/refresh.svg"/></a><br>
+			<button id="start" class="ui_button">Go!</button>
+		</div>
+
     <script src="https://www.gstatic.com/firebasejs/4.9.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/4.9.0/firebase-database.js"></script>
     <script src="./firebase.js"></script>
-  </head>
-  <body>
-    <h2>WELCOME TO THE</h2>
-    <div class="cup">
-      <input id="name" type="text"/> CUP! <button id="new">new</button>
-    </div>
-    <hr/>
-    <div><button id="start">START!</button></div>
-    <hr/>
-    <button id="add-a-shifter">add TEAM A shifter</button>
-    <button id="add-b-shifter">add TEAM B shifter</button>
-    <div id="modal"></div>
+    <script src="./random-name.js"></script>
     <script>
-      var nameField = document.getElementById("name");
-      var adjs = [
-        "AGGRESSIVE",
-        "HAPPY",
-        "QUIET",
-        "SHORT",
-        "SLIPPERY",
-        "STUPID",
-        "SUPER",
-        "WORLD",
-        "ZEN",
-      ];
-      var nouns = [
-        "LLAMA",
-        "STAR",
-        "FOREST",
-        "TIN",
-        "TORNADO",
-        "CANYON",
-        "MARSH",
-        "AERIAL",
-        "SPLOOSH(tm)",
-        "WHATEVER",
-      ];
-      function newName() {
-        nameField.value = adjs[Math.floor(Math.random() * adjs.length)] + " " + nouns[Math.floor(Math.random() * nouns.length)];
+      var codeField = document.getElementById("race_code");
+      function getKey() {
+        var str = "";
+        var letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        for (var i = 0; i < 5; i++) {
+          str += letters[Math.floor(Math.random() * letters.length)];
+        }
+        return str;
       }
+      function newName() {
+        codeField.value = getKey();
+      }
+      document.getElementById("shuffle_icon").addEventListener("click", newName, false);
       newName();
 
-      function getKey() {
-        return nameField.value.replace(/[^a-zA-Z0-9]+/g, "-").toLowerCase();
-      }
       document.getElementById("start").addEventListener("click", function connectToRace() {
-        var cupName = getKey();
-        localStorage.setItem("race", nameField.value);
-        localStorage.setItem("raceKey", cupName);
-
-        firebase.database().ref('races/' + cupName).once('value').then(exists => {
-          var modal = document.getElementById("modal");
+        firebase.database().ref(codeField.value).once('value').then(exists => {
+          localStorage.setItem("room_code", codeField.value.toUpperCase());
           if (!exists.val()) {
-            modal.innerHTML = "You are Team<b>A</b>";
-            firebase.database().ref('races/' + cupName).push().set({ gear: "start", team: "A", time: new Date() });
-            var checkLoop = setInterval(function check() {
-              firebase.database().ref('races/' + cupName).once('value').then(latest => {
-                localStorage.setItem("team", "A");
-                if (latest.val().team === "B") {
-                  clearInterval(checkLoop);
-                  modal.innerHTML = "You are Team<b>A</b>READY";
-                  setTimeout(function showTeam() {
-                    window.location = "race.html";
-                  }, 1000);
-                }
-              });
-            }, 1000);
+            var cupName = getRandomName();
+            localStorage.setItem("race_name", cupName);
+            firebase.database().ref(codeField.value).set({
+              name: cupName,
+              kickoff: { kickoff: false },
+              roles: [],
+              times: [],
+            }).then(x => {
+              window.location = "race_setup.html";
+            });
           } else {
-            modal.innerHTML = "You are Team<b>B</b>";
-            firebase.database().ref('races/' + cupName).push().set({ gear: "start", team: "B", time: new Date() });
-            localStorage.setItem("team", "B");
-            setTimeout(function showTeam() {
-              window.location = "race.html";
-            }, 2000);
+            window.location = "race_setup.html";
           }
-          modal.classList.add("open");
         });
-      }, false);
-
-      document.getElementById("add-a-shifter").addEventListener("click", function addAShifter() {
-        localStorage.setItem("race", nameField.value);
-        localStorage.setItem("raceKey", getKey());
-        localStorage.setItem("team", "A");
-        window.location = "shifter.html";
-      }, false);
-      document.getElementById("add-b-shifter").addEventListener("click", function addAShifter() {
-        localStorage.setItem("race", nameField.value);
-        localStorage.setItem("raceKey", getKey());
-        localStorage.setItem("team", "B");
-        window.location = "shifter.html";
-      }, false);
+      });
     </script>
   </body>
 </html>

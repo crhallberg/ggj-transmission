@@ -4,30 +4,50 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<title>Quack to the Future</title>
+
     <link rel="stylesheet" href="./style.css"/>
+		<link href="https://fonts.googleapis.com/css?family=Roboto+Condensed" rel="stylesheet">
+		<link href="https://fonts.googleapis.com/css?family=Niconne" rel="stylesheet">
+		<link href="https://fonts.googleapis.com/css?family=Oswald:400,700" rel="stylesheet">
+
     <script src="https://www.gstatic.com/firebasejs/4.9.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/4.9.0/firebase-database.js"></script>
     <script src="./firebase.js"></script>
-    <style>
-      html { font-size: 16px; }
-      body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"; }
-      button {
-        padding-top: 2rem;
-        padding-bottom: 2rem;
-        font-size: 2rem;
-      }
-    </style>
   </head>
   <body>
-    <h1>LEADERBOARD</h1>
-    <p id="current-race"></p>
-    <p>Team A: <span id="team-a"></span></p>
-    <p>Team B: <span id="team-b"></span></p>
+		<div id="center_container">
+			<div id="current_race">Current race...</div>
+			<div id="leaderboard_race_name">Slippery Canyon Cup</div><br>
+			Time:
+			<div id="race_time">00:12.183</div>
+      <div class="column wide">
+        Team A:<br/>
+        <span id="team-A"></span>
+      </div>
+      <div class="column wide">
+        Team B:<br/>
+        <span id="team-B"></span>
+      </div>
+			<br>
+			<div id="leaderboard">&mdash;&nbsp; Leaderboard &nbsp;&mdash;</div>
+			<table>
+				<thead>
+          <tr>
+            <th>Cup</th>
+            <th>Team</th>
+            <th>Time</th>
+          </tr>
+        </thead>
+        <tbody id="table">
+        </tbody>
+			</table>
+		</div>
 
     <script>
       var loopTimer = false;
       var startTime;
-      var currentEl = document.getElementById("current-race");
+      var timerEl = document.getElementById("race_time");
       function formatTime(millis) {
         var seconds = millis / 1000;
         var minutes = Math.floor(seconds / 60);
@@ -39,13 +59,51 @@
         // Display
         return minutes + ":" + seconds;
       }
+      var teamATimeEl = document.getElementById("team-A");
+      var teamBTimeEl = document.getElementById("team-B");
       function updateTimer() {
-        currentEl.innerHTML = formatTime(new Date().getTime() - startTime);
+        timerEl.innerHTML = formatTime(new Date().getTime() - startTime);
+        if (!finished["A"]) {
+          teamATimeEl.innerHTML = formatTime(Math.random() * 5940000);
+        }
+        if (!finished["B"]) {
+          teamBTimeEl.innerHTML = formatTime(Math.random() * 5940000);
+        }
         // Repeat
         if (loopTimer) {
           requestAnimationFrame(updateTimer);
         }
       }
+
+      var all_times = [];
+      function updateLeaderboard() {
+        all_times.sort((a, b) => b.millis - a.millis);
+        var newestA = -1;
+        var newestB = -1;
+        for (var i = 0; i < all_times.length; i++) {
+          if (all_times[i].team === "A") {
+            if (newestA < 0 || all_times[i].time > all_times[newestA]) {
+              newestA = i;
+            }
+          } else {
+            if (newestB < 0 || all_times[i].time > all_times[newestB]) {
+              newestB = i;
+            }
+          }
+        }
+        var table = document.getElementById("table");
+        table.innerHTML = "";
+        for (var i = 0; i < 5; i++) {
+          table.innerHTML += "<tr";
+          if (i === newestA || i === newestB) {
+            table.innerHTML += ' class="new"';
+          }
+          table.innerHTML += "><td>" + all_times[i].race + "</td>"
+            + "<td>" + all_times[i].team + "</td>"
+            + "<td>" + formatTime(all_times[i].millis) + "</td></tr>";
+        }
+      }
+
       var finished = { A: false, B: false };
       function startTimer() {
         finished = { A: false, B: false };
@@ -55,14 +113,14 @@
       }
       function stopTimer(json) {
         finished[json.team] = true;
-        document.getElementById("team-" + json.team.toLowerCase()).innerHTML = formatTime(json.millis);
+        document.getElementById("team-" + json.team).innerHTML = formatTime(json.millis);
         loopTimer = !(finished["A"] && finished["B"]);
       }
-
-      var all_times = [];
-      var newest = [];
       document.addEventListener("config-loaded", function leaderboard() {
         var startTime = new Date().getTime();
+
+        // TODO: Capture races correctly
+
         // Active timer
         var raceRef = firebase.database().ref("races/");
         raceRef.on('child_added', function(data) {
@@ -84,7 +142,6 @@
           }
           all_times.append(json);
           stopTimer(json);
-          updateLeaderboard();
         });
       }, false);
     </script>
