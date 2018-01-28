@@ -27,7 +27,7 @@ function preload()
 
 function setup()
 {
-	
+
 }
 
 
@@ -45,16 +45,22 @@ var tach = 1000;
 var rammaFjoldin = 0;
 var carAnimationPhase = 1;
 var needle;
-var NEEDLE_INCREMENT = 300/60;
-var VELOCITY_INCREMENT = 5;
-var needleDirection = 1;
-var distanceTraveled = 0;
-var FINISH_LINE_APPEARS = 10000;
+// FINISH LINE
+var FINISH_LINE_APPEARS = 30000;
 var RACE_OVER_DISTANCE = FINISH_LINE_APPEARS + 800;
+var distanceTraveled = 0;
 var finishLine;
 var finishLineAppeared = false;
 var finishLineDrawn = false;
 var raceOver = false;
+// Acceleration
+var ACC_INIT_PERIOD = 250;
+var ACC_PERIOD = ACC_INIT_PERIOD;
+var ACC_EXT = 50;
+var ACC_SPLIT = 0;
+var MAX_ACC = 1 / 60;
+var ACC_FLOOR = 0;
+var ACC = 0;
 
 function draw()
 {
@@ -84,8 +90,8 @@ function create()
 	road = game.add.sprite(0,0,'road');
 	secondRoad = game.add.sprite(800,0,'road');
 	car = game.add.sprite(0,300,'car1');
-	game.add.sprite(549,349,'tach');
-	needle = game.add.sprite(680,489,'needle');
+	game.add.sprite(548,348,'tach');
+	needle = game.add.sprite(680,488,'needle');
 	needle.anchor.setTo(.8,.5);
 
 	arrows = game.input.keyboard.createCursorKeys();
@@ -105,31 +111,20 @@ function update()
 	}
 	distanceTraveled += velocity;
 	errorCorrect(road, secondRoad);
-	
+
 	updateCarSpriteIfNecessary();
-	
+
+	driveOnACurve();
 	increaseTach();
-	
+
 	rammaFjoldin++;
 
-	if(arrows.right.isDown)
-	{
-		accelDown = true;
-	}
-	if (arrows.right.isUp && accelDown && CURRENT_GEAR <= 4)
-	{
-		attemptShift();
-	}
-	else if(arrows.left.isDown && CURRENT_GEAR >= 0)
-	{
-		CURRENT_GEAR--;
-	}
 	if(distanceTraveled >= FINISH_LINE_APPEARS && finishLineDrawn === false)
 	{
 		finishLineDrawn = true;
 		finishLine = game.add.sprite(800,0,'finish');
 	}
-	
+
 	if(distanceTraveled >= RACE_OVER_DISTANCE)
 	{
 		raceOver = true;
@@ -148,25 +143,9 @@ function stall()
 
 function increaseTach()
 {
-	needle.angle += (NEEDLE_INCREMENT * needleDirection);
-	if(needle.angle === 90)
-	{
-		var q = 16;
-	}
-	console.log(needle.angle);
-	if(needle.angle <= 0)
-	{
-		if(needleDirection === 1)
-		{
-			needle.angle = 180;
-			needleDirection = -1;
-		}
-		else
-		{
-			needle.angle = 0;
-			needleDirection = 1;
-		}
-	}
+	var theta = 180 * ACC_SPLIT / ACC_PERIOD;
+    theta = Math.min(Math.random() * 10 + 120, theta);
+	needle.angle = theta;
 }
 
 function attemptShift()
@@ -211,14 +190,17 @@ function updateCarSpriteIfNecessary()
 	}
 }
 
-function attemptToIncreaseVelocity()
+function driveOnACurve()
 {
-	if(velocity < (5 * (VELOCITY_INCREMENTS_PER_GEAR + (VELOCITY_INCREMENTS_PER_GEAR * CURRENT_GEAR))))
-	{
-//		console.log('GEAR: ' + CURRENT_GEAR);
-		velocity += VELOCITY_INCREMENT;
-		tach += TACH_INCREMENT_PER_ACCEL;
-		needle.angle += NEEDLE_INCREMENT;
+	if (gear > 0) {
+		ACC = Math.max(0, MAX_ACC * Math.sin((Math.PI * ACC_SPLIT) / ACC_PERIOD)) + ACC_FLOOR; // ACC FORMULA
+	} else {
+		ACC = 0;
+	}
+	// console.log('GEAR: ' + gear, ACC);
+	velocity += ACC;
+	if (gear > 0 && ACC_SPLIT < ACC_PERIOD) {
+		ACC_SPLIT += 1;
 	}
 }
 
@@ -247,3 +229,25 @@ function errorCorrect(one, two)
 		two.position.x = one.position.x + 801;
 	}
 }
+
+document.addEventListener("gear-shift", function handleGearShift(event) {
+	newGear = event.detail;
+	gear = newGear; // up gear
+	ACC_SPLIT = 0; // reset curve
+	ACC_FLOOR = ACC; // save floor
+	ACC_PERIOD = ACC_INIT_PERIOD + ACC_EXT * gear; // extend period
+	// Downshift penalty
+	if (newGear < gear) {
+		ACC_FLOOR = 0;
+	}
+}, false);
+
+var debug_shift = 0;
+document.addEventListener("keydown", function debugShift() {
+	if (debug_shift < 6) {
+		debug_shift += 1
+		var event = document.createEvent('CustomEvent');
+		event.initCustomEvent("gear-shift", true, true, debug_shift);
+		document.dispatchEvent(event);
+	}
+}, false);
