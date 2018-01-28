@@ -31,11 +31,11 @@ function setup()
 
 
 var arrows;
-var velocity = 1;
+var velocity = 0;
 var road;
 var secondRoad;
 var TACH_FLOOR = 1000;
-var gear = 1;
+var gear = 0;
 var VELOCITY_INCREMENTS_PER_GEAR = 14;
 var TACH_INCREMENT_PER_ACCEL = 200;
 var MIN_RPM = 600;
@@ -76,8 +76,8 @@ function create()
 	road = game.add.sprite(0,0,'road');
 	secondRoad = game.add.sprite(800,0,'road');
 	car = game.add.sprite(0,300,'car1');
-	game.add.sprite(674,474,'tach');
-	needle = game.add.sprite(740,544,'needle');
+	game.add.sprite(549,349,'tach');
+	needle = game.add.sprite(680,489,'needle');
 	needle.anchor.setTo(.8,.5);
 
 	arrows = game.input.keyboard.createCursorKeys();
@@ -115,16 +115,21 @@ function update()
 
 function stall()
 {
-	velocity = VELOCITY_INCREMENT;
-	CURRENT_GEAR = 1;
+	velocity = 0;
+	CURRENT_GEAR = 0;
 	needle.angle = 0;
-	console.log('STALLED');
+	//console.log('STALLED');
 	stalled = true;
 }
 
 function increaseTach()
 {
 	needle.angle += (NEEDLE_INCREMENT * needleDirection);
+	if(needle.angle === 90)
+	{
+		var q = 16;
+	}
+	console.log(needle.angle);
 	if(needle.angle <= 0)
 	{
 		if(needleDirection === 1)
@@ -143,11 +148,11 @@ function increaseTach()
 function attemptShift()
 {
 	accelDown = false;
-	console.log(needle.angle);
+//	console.log(needle.angle);
 	if(CURRENT_GEAR < 5)
 	{
 		CURRENT_GEAR++;
-		if(needle.angle > 75 && needle.angle < 105)
+		if(needle.angle >= 65 && needle.angle <= 115)
 		{
 			velocity = VELOCITY_INCREMENT * CURRENT_GEAR;
 		}
@@ -182,7 +187,7 @@ function attemptToIncreaseVelocity()
 {
 	if(velocity < (5 * (VELOCITY_INCREMENTS_PER_GEAR + (VELOCITY_INCREMENTS_PER_GEAR * CURRENT_GEAR))))
 	{
-		console.log('GEAR: ' + CURRENT_GEAR);
+//		console.log('GEAR: ' + CURRENT_GEAR);
 		velocity += VELOCITY_INCREMENT;
 		tach += TACH_INCREMENT_PER_ACCEL;
 		needle.angle += NEEDLE_INCREMENT;
@@ -191,7 +196,7 @@ function attemptToIncreaseVelocity()
 
 function logTach()
 {
-	console.log('TACH: ' + tach);
+//	console.log('TACH: ' + tach);
 }
 
 function changeRoadSegmentPosition(segment)
