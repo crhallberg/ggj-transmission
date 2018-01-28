@@ -16,6 +16,7 @@ function preloadPhaser()
 	game.load.spritesheet('car3','images/car3.png');
 	game.load.spritesheet('tach','images/Tachometer.png');
 	game.load.spritesheet('needle','images/Needle.png');
+	game.load.spritesheet('finish','images/finish.png');
 }
 
 function preload()
@@ -47,6 +48,11 @@ var needle;
 var NEEDLE_INCREMENT = 300/60;
 var VELOCITY_INCREMENT = 5;
 var needleDirection = 1;
+var distanceTraveled = 0;
+var FINISH_LINE_APPEARS = 10000;
+var finishLine;
+var finishLineAppeared = false;
+var finishLineDrawn = false;
 
 function draw()
 {
@@ -91,6 +97,11 @@ function update()
 //	}
 	changeRoadSegmentPosition(road);
 	changeRoadSegmentPosition(secondRoad);
+	if(finishLineDrawn)
+	{
+		finishLine.position.x -= velocity;
+	}
+	distanceTraveled += velocity;
 	errorCorrect(road, secondRoad);
 	
 	updateCarSpriteIfNecessary();
@@ -110,6 +121,11 @@ function update()
 	else if(arrows.left.isDown && CURRENT_GEAR >= 0)
 	{
 		CURRENT_GEAR--;
+	}
+	if(distanceTraveled >= FINISH_LINE_APPEARS && finishLineDrawn === false)
+	{
+		finishLineDrawn = true;
+		finishLine = game.add.sprite(800,0,'finish');
 	}
 }
 
@@ -180,6 +196,10 @@ function updateCarSpriteIfNecessary()
 	else if(rammaFjoldin === 45)
 	{
 		game.add.sprite(0,300,'careven');
+	}
+	else if(rammaFjoldin === 60)
+	{
+		rammaFjoldin = 0;
 	}
 }
 
