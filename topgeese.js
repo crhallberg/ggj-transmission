@@ -30,7 +30,6 @@ function setup()
 
 }
 
-
 var arrows;
 var velocity = 0;
 var road;
@@ -62,6 +61,40 @@ var MAX_ACC = 1 / 60;
 var ACC_FLOOR = 0;
 var ACC = 0;
 
+function initializeVariables()
+{
+	arrows;
+	velocity = 0;
+	road;
+	secondRoad;
+	TACH_FLOOR = 1000;
+	gear = 0;
+	VELOCITY_INCREMENTS_PER_GEAR = 14;
+	TACH_INCREMENT_PER_ACCEL = 200;
+	MIN_RPM = 600;
+	accelDown;
+	tach = 1000;
+	rammaFjoldin = 0;
+	carAnimationPhase = 1;
+	needle;
+	// FINISH LINE
+	FINISH_LINE_APPEARS = 30000;
+	RACE_OVER_DISTANCE = FINISH_LINE_APPEARS + 800;
+	distanceTraveled = 0;
+	finishLine;
+	finishLineAppeared = false;
+	finishLineDrawn = false;
+	raceOver = false;
+	// Acceleration
+	ACC_INIT_PERIOD = 250;
+	ACC_PERIOD = ACC_INIT_PERIOD;
+	ACC_EXT = 50;
+	ACC_SPLIT = 0;
+	MAX_ACC = 1 / 60;
+	ACC_FLOOR = 0;
+	ACC = 0;
+}
+
 function draw()
 {
   var volume = map(1, 0, width, 0, 1);
@@ -83,6 +116,11 @@ function draw()
   }
 }
 
+function rematch()
+{
+	initializeVariables();
+	create();
+}
 
 function create()
 {
