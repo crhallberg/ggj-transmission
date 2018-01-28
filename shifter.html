@@ -6,25 +6,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<title>Quack to the Future</title>
     <link rel="stylesheet" href="./style.css"/>
+    <link href="https://fonts.googleapis.com/css?family=Oswald:400,700" rel="stylesheet"/>
+  </head>
+  <body>
+    <div id="center_container">
+      <div id="shift-header">Shift Gear</div>
+      <div id="button-container">
+        <span id="gear-number">1</span>
+        <img id="button-unpressed" src="images/shifter_button.png"/>
+        <img id="button-pressed" src="images/shifter_button_depressed.png"/>
+      </div>
+    </div>
+
     <script src="https://www.gstatic.com/firebasejs/4.9.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/4.9.0/firebase-database.js"></script>
     <script src="./firebase.js"></script>
-    <style>
-      html { font-size: 16px; }
-      body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"; }
-      button {
-        padding-top: 2rem;
-        padding-bottom: 2rem;
-        font-size: 2rem;
-      }
-    </style>
-  </head>
-  <body>
-    <p><a href="index.html">&lt; New Race</a></p>
-    <h1 id="id"></h1>
-    <button id="button_overlay">SHIFT</button>
-    <span id="race-name"></span>
-
     <script>
       var ID = -1;
       var GEAR_VALUE = -1;
@@ -32,8 +28,7 @@
       var roleKey = localStorage.getItem("role_key");
       var team = localStorage.getItem("team");
 
-      document.getElementById("race-name").innerHTML = localStorage.getItem("race_name") + " Cup";
-      document.getElementById("button_overlay").innerHTML = team;
+      document.getElementById("gear-number").innerHTML = team;
 
       document.addEventListener("config-loaded", function raceIndicators() {
         var shiftsRef = firebase.database().ref(raceKey + "/shifts");
@@ -52,9 +47,9 @@
               index += 1;
             }
           }
-          document.getElementById("id").innerHTML = "TEAM " + team + " (" + ID + ")";
+          console.log("ID: " + ID);
           // WAIT FOR ORDER
-        var startTime = new Date().getTime();
+          var startTime = new Date().getTime();
           firebase.database().ref(raceKey + "/order").on("value", data => {
             var json = data.val();
             if (!json.time || json.time < startTime) {
@@ -62,16 +57,28 @@
             }
             console.log(json);
             GEAR_VALUE = json.order[ID];
-            document.getElementById("button_overlay").innerHTML = GEAR_VALUE;
+            document.getElementById("gear-number").innerHTML = GEAR_VALUE;
             // ACTION
-            document.addEventListener("keydown", function sendShiftKey() {
+            function pressButton() {
+              e.preventDefault();
+              document.getElementById("button-unpressed").style.display = "none";
+              document.getElementById("button-pressed").style.display = "initial";
+            }
+            function unpressButton() {
+              e.preventDefault();
+              document.getElementById("button-unpressed").style.display = "initial";
+              document.getElementById("button-pressed").style.display = "none";
               console.log("SHIFT", GEAR_VALUE);
-              shiftsRef.push().set({
+              raceRef.push().set({
                 gear: GEAR_VALUE,
                 team: team,
-                time: new Date().getTime(),
+                time: new Date().getTime()
               });
-            }, false);
+            }
+            document.addEventListener("keydown", pressButton, false);
+            document.addEventListener("keyup", unpressButton, false);
+            document.addEventListener("mousedown", pressButton, false);
+            document.addEventListener("mouseup", unpressButton, false);
           });
           // LISTEN TO OTHER SHIFTS
           var startTime = new Date().getTime();
