@@ -37,7 +37,7 @@
       document.getElementById("shuffle_icon").addEventListener("click", newName, false);
       newName();
 
-      document.getElementById("start").addEventListener("click", function connectToRace() {
+      function connectToRace() {
         firebase.database().ref(codeField.value).once('value').then(exists => {
           localStorage.setItem("room_code", codeField.value.toUpperCase());
           if (!exists.val()) {
@@ -56,7 +56,13 @@
             window.location = "race_setup.html";
           }
         });
-      });
+      }
+      document.getElementById("start").addEventListener("click", connectToRace, false);
+      document.getElementById("race_code").addEventListener("keyup", function enterRace(e) {
+        if (e.keyCode == 13) {
+          connectToRace();
+        }
+      }, false);
     </script>
   </body>
 </html>
