@@ -164,6 +164,9 @@ td:not(:first-child) {
   font-size: 30px;
   font-weight: bold;
 }
+table { border-spacing: 0; }
+tr:nth-child(even) { background-color: #ddd; }
+th, td { padding: 1rem 2rem; }
 
 /* shifter.html */
 
@@ -201,3 +204,6 @@ td:not(:first-child) {
 .stall {
   background-color: #970000;
 }
+
+/* driver */
+canvas { margin: 100px auto; }

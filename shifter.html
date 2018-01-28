@@ -57,9 +57,7 @@
             }
             console.log(json);
             GEAR_VALUE = json.order[ID];
-            if (GEAR_VALUE === 1) {
-              document.body.classList.add("current");
-            }
+            document.body.classList.add("remove");
             document.getElementById("gear-number").innerHTML = GEAR_VALUE;
             // ACTION
             function pressButton(e) {

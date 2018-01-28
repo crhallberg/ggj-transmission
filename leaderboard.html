@@ -35,8 +35,7 @@
             <th>Time</th>
           </tr>
         </thead>
-        <tbody id="table">
-        </tbody>
+        <tbody id="table"></tbody>
 			</table>
 		</div>
 
@@ -76,16 +75,17 @@
           }
         }
         var table = document.getElementById("table");
-        table.innerHTML = "";
+        var html = "";
         for (var i = 0; i < 5 && i < all_times.length; i++) {
-          table.innerHTML += "<tr";
+          html += "<tr";
           if (i === newestA || i === newestB) {
-            table.innerHTML += ' class="new"';
+            html += ' class="new"';
           }
-          table.innerHTML += "><td>" + all_times[i].race + "</td>"
+          html += "><td>" + all_times[i].race + "</td>"
             + "<td>" + all_times[i].team + "</td>"
             + "<td>" + formatTime(all_times[i].millis) + "</td></tr>";
         }
+        table.innerHTML = html;
       }
 
       var finished = { A: false, B: false };

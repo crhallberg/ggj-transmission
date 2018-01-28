@@ -38,9 +38,10 @@
       newName();
 
       function connectToRace() {
-        firebase.database().ref(codeField.value).once('value').then(exists => {
-          var room_code = codeField.value.toUpperCase();
+        var room_code = codeField.value.toUpperCase();
+        firebase.database().ref(room_code).once('value').then(exists => {
           localStorage.setItem("room_code", room_code);
+          console.log(exists.val());
           if (!exists.val()) {
             var cupName = getRandomName();
             localStorage.setItem("race_name", cupName);
@@ -51,6 +52,7 @@
               times: [],
               created: new Date().getTime(),
             }).then(x => {
+              alert("MAKING NEW (DEBUG)");
               window.location = "race_setup.html";
             });
           } else {

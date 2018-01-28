@@ -138,7 +138,7 @@ function update()
 	if(distanceTraveled >= RACE_OVER_DISTANCE)
 	{
 		engine.stop();
-		if (!raceover) {
+		if (!raceOver) {
 			console.log('YOUR WINNER');
 			finishSound.play();
 			applauseSound.play();
@@ -258,16 +258,18 @@ document.addEventListener("gear-shift", function handleGearShift(event) {
 	}
 }, false);
 
-var debug_shift = 0;
-document.addEventListener("keydown", function debugShift() {
-	if (engine.isPlaying() === false)
-	{
-		engine.loop();
-	}
-	if (debug_shift < 6) {
-		debug_shift += 1
-		var event = document.createEvent('CustomEvent');
-		event.initCustomEvent("gear-shift", true, true, debug_shift);
-		document.dispatchEvent(event);
-	}
-}, false);
+if (false) {
+	var debug_shift = 0;
+	document.addEventListener("keydown", function debugShift() {
+		if (engine.isPlaying() === false)
+		{
+			engine.loop();
+		}
+		if (debug_shift < 6) {
+			debug_shift += 1
+			var event = document.createEvent('CustomEvent');
+			event.initCustomEvent("gear-shift", true, true, debug_shift);
+			document.dispatchEvent(event);
+		}
+	}, false);
+}
