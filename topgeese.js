@@ -50,9 +50,11 @@ var VELOCITY_INCREMENT = 5;
 var needleDirection = 1;
 var distanceTraveled = 0;
 var FINISH_LINE_APPEARS = 10000;
+var RACE_OVER_DISTANCE = FINISH_LINE_APPEARS + 800;
 var finishLine;
 var finishLineAppeared = false;
 var finishLineDrawn = false;
+var raceOver = false;
 
 function draw()
 {
@@ -126,6 +128,12 @@ function update()
 	{
 		finishLineDrawn = true;
 		finishLine = game.add.sprite(800,0,'finish');
+	}
+	
+	if(distanceTraveled >= RACE_OVER_DISTANCE)
+	{
+		raceOver = true;
+		console.log('YOUR WINNER');
 	}
 }
 
