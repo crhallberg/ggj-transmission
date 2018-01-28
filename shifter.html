@@ -50,7 +50,6 @@
           }
           console.log("ID: " + ID);
           // WAIT FOR ORDER
-          var startTime = new Date().getTime();
           firebase.database().ref(raceKey + "/order").on("value", data => {
             var json = data.val();
             if (!json.time || json.time < startTime) {
@@ -87,7 +86,6 @@
             document.addEventListener("mouseup", unpressButton, false);
           });
           // LISTEN TO OTHER SHIFTS
-          var startTime = new Date().getTime();
           shiftsRef.on('child_added', function(data) {
             json = data.val();
             if (!json.time || json.time < startTime) {

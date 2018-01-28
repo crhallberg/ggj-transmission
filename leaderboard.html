@@ -45,7 +45,7 @@
     <script src="./firebase.js"></script>
     <script>
       var loopTimer = false;
-      var startTime;
+      var timerStart;
       var timerEl = document.getElementById("race_time");
       function formatTime(millis) {
         var seconds = millis / 1000;
@@ -57,21 +57,6 @@
         else seconds = seconds.toFixed(3);
         // Display
         return minutes + ":" + seconds;
-      }
-      var teamATimeEl = document.getElementById("team-A");
-      var teamBTimeEl = document.getElementById("team-B");
-      function updateTimer() {
-        timerEl.innerHTML = formatTime(new Date().getTime() - startTime);
-        if (!finished["A"]) {
-          teamATimeEl.innerHTML = formatTime(Math.random() * 5940000);
-        }
-        if (!finished["B"]) {
-          teamBTimeEl.innerHTML = formatTime(Math.random() * 5940000);
-        }
-        // Repeat
-        if (loopTimer) {
-          requestAnimationFrame(updateTimer);
-        }
       }
 
       var all_times = [];
@@ -104,9 +89,24 @@
       }
 
       var finished = { A: false, B: false };
+      var teamATimeEl = document.getElementById("team-A");
+      var teamBTimeEl = document.getElementById("team-B");
+      function updateTimer() {
+        timerEl.innerHTML = formatTime(new Date().getTime() - timerStart);
+        if (!finished["A"]) {
+          teamATimeEl.innerHTML = formatTime(Math.random() * 5940000);
+        }
+        if (!finished["B"]) {
+          teamBTimeEl.innerHTML = formatTime(Math.random() * 5940000);
+        }
+        // Repeat
+        if (loopTimer) {
+          requestAnimationFrame(updateTimer);
+        }
+      }
       function startTimer() {
         finished = { A: false, B: false };
-        startTime = new Date().getTime();
+        timerStart = new Date().getTime();
         loopTimer = true;
         updateTimer();
       }
@@ -120,10 +120,7 @@
       }
 
       document.addEventListener("config-loaded", function leaderboard() {
-        var startTime = new Date().getTime();
-
         // TODO: Capture races correctly
-        var startTime = new Date().getTime();
         var currentRace = null;
         firebase.database().ref().on("child_added", data => {
           var json = data.val();
