@@ -184,6 +184,10 @@ function attemptShift()
 
 function updateCarSpriteIfNecessary()
 {
+	if(velocity === 0)
+	{
+		return;
+	}
 	if(rammaFjoldin === 0)
 	{
 		game.add.sprite(0,300,'car1');
@@ -200,7 +204,7 @@ function updateCarSpriteIfNecessary()
 	{
 		game.add.sprite(0,300,'careven');
 	}
-	else if(rammaFjoldin === 60)
+	else if(rammaFjoldin >= 60)
 	{
 		rammaFjoldin = 0;
 	}
