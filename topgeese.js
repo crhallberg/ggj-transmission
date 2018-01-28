@@ -26,12 +26,12 @@ function preload()
 
 function setup()
 {
-	
+
 }
 
 
 var arrows;
-var velocity = 1;
+var velocity = 0;
 var road;
 var secondRoad;
 var TACH_FLOOR = 1000;
@@ -44,7 +44,14 @@ var tach = 1000;
 var rammaFjoldin = 0;
 var carAnimationPhase = 1;
 var needle;
-var NEEDLE_INCREMENT = 180/13;
+// Acceleration
+var ACC_INIT_PERIOD = 250;
+var ACC_PERIOD = ACC_INIT_PERIOD;
+var ACC_EXT = 50;
+var ACC_SPLIT = 0;
+var MAX_ACC = 1 / 60;
+var ACC_FLOOR = 0;
+var ACC = 0;
 
 function draw()
 {
@@ -90,45 +97,10 @@ function update()
 	changeRoadSegmentPosition(road);
 	changeRoadSegmentPosition(secondRoad);
 	errorCorrect(road, secondRoad);
-	
-	updateCarSpriteIfNecessary();
-	
-	if(rammaFjoldin >= 60)
-	{
-		//console.log(rammaFjoldin);
-		attemptToIncreaseVelocity();
-		rammaFjoldin = 0;
-	}
-	rammaFjoldin++;
-//	logTach();
-//	console.log(velocity);
-//	console.log('GEAR: ' + gear);
 
-	if(arrows.right.isDown)
-	{
-		accelDown = true;
-	}
-	if (arrows.right.isUp && accelDown && gear <= 4)
-	{
-		tach -= 2800;
-		gear++;
-		needle.angle = 0;
-		accelDown = false;
-	}
-	else if(arrows.left.isDown && gear >= 0)
-	{
-		gear--;
-	}
-	
-	if(tach < MIN_RPM)
-	{
-		velocity = 1;
-		gear = 0;
-		tach = 1000;
-		needle.angle = 0;
-		console.log('STALLED');
-		stalled = true;
-	}
+	updateCarSpriteIfNecessary();
+
+	driveOnACurve();
 }
 
 function updateCarSpriteIfNecessary()
@@ -151,14 +123,22 @@ function updateCarSpriteIfNecessary()
 	}
 }
 
-function attemptToIncreaseVelocity()
+function driveOnACurve()
 {
-	if(velocity < (VELOCITY_INCREMENTS_PER_GEAR + (VELOCITY_INCREMENTS_PER_GEAR * gear)))
-	{
-		console.log('GEAR: ' + gear);
-		velocity++;
-		tach += TACH_INCREMENT_PER_ACCEL;
-		needle.angle += NEEDLE_INCREMENT;
+	if (gear > 0) {
+		ACC = Math.max(0, MAX_ACC * Math.sin((Math.PI * ACC_SPLIT) / ACC_PERIOD)) + ACC_FLOOR; // ACC FORMULA
+	} else {
+		ACC = 0;
+	}
+	// console.log('GEAR: ' + gear, ACC);
+	velocity += ACC;
+	var theta = 180 * ACC_SPLIT / ACC_PERIOD;
+	if (gear == 6) {
+	  theta = Math.min(random(100, 120), theta);
+	}
+	needle.angle = theta;
+	if (gear > 0) {
+		ACC_SPLIT += 1;
 	}
 }
 
@@ -187,3 +167,25 @@ function errorCorrect(one, two)
 		two.position.x = one.position.x + 801;
 	}
 }
+
+document.addEventListener("gear-shift", function handleGearShift(event) {
+	newGear = event.detail;
+	gear = newGear; // up gear
+	ACC_SPLIT = 0; // reset curve
+	ACC_FLOOR = ACC; // save floor
+	ACC_PERIOD = ACC_INIT_PERIOD + ACC_EXT * gear; // extend period
+	// Downshift penalty
+	if (newGear < gear) {
+		ACC_FLOOR = 0;
+	}
+}, false);
+
+var debug_shift = 0;
+document.addEventListener("keydown", function debugShift() {
+	if (debug_shift < 6) {
+		debug_shift += 1
+		var event = document.createEvent('CustomEvent');
+		event.initCustomEvent("gear-shift", true, true, debug_shift);
+		document.dispatchEvent(event);
+	}
+}, false);

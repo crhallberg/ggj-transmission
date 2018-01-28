@@ -183,6 +183,9 @@
           if (json.team === team) {
             CURRENT_GEAR = json.gear;
             document.getElementById("shift-gear").innerHTML = CURRENT_GEAR;
+            var event = document.createEvent('CustomEvent');
+            event.initCustomEvent("gear-shift", true, true, CURRENT_GEAR);
+            document.dispatchEvent(event);
           }
         });
       });
