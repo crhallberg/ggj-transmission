@@ -5,6 +5,9 @@ var CURRENT_GEAR = 1;
 var START_TIME;
 var engine;
 var stallSound;
+var finishSound;
+var countdownSound;
+var applauseSound;
 var stalled = false;
 
 function preloadPhaser()
@@ -23,6 +26,9 @@ function preload()
 {
 	engine = loadSound('engine.wav');
 	stallSound = loadSound('stall.wav');
+	finishSound = loadSound('sounds/finish.wav');
+	countdownSound = loadSound('sounds/countdown.wav');
+	applauseSound = loadSound('sounds/applause.wav');
 }
 
 function setup()
@@ -46,7 +52,7 @@ var rammaFjoldin = 0;
 var carAnimationPhase = 1;
 var needle;
 // FINISH LINE
-var FINISH_LINE_APPEARS = 30000;
+var FINISH_LINE_APPEARS = 50000;
 var RACE_OVER_DISTANCE = FINISH_LINE_APPEARS + 800;
 var distanceTraveled = 0;
 var finishLine;
@@ -69,9 +75,13 @@ function draw()
   engine.amp(1);
 
   var speed = map(tach/45, 0.1, height, 0, 2);
-  //console.log(speed);
-  speed = constrain(speed, 0.01, 4);
-  engine.rate(speed);
+  speed = map(
+	ACC_SPLIT + velocity * 10,
+	0, ACC_PERIOD + 200,
+	0.1, 3
+  );
+  engine.rate(speed); // how fast sound is playing
+
   if(GAME_LOCKED === false && engine.isPlaying() === false)
   {
 	  engine.loop();
@@ -127,8 +137,14 @@ function update()
 
 	if(distanceTraveled >= RACE_OVER_DISTANCE)
 	{
+		engine.stop();
+		if (!raceover) {
+			console.log('YOUR WINNER');
+			finishSound.play();
+			applauseSound.play();
+			submitTime();
+		}
 		raceOver = true;
-		console.log('YOUR WINNER');
 	}
 }
 
@@ -244,6 +260,10 @@ document.addEventListener("gear-shift", function handleGearShift(event) {
 
 var debug_shift = 0;
 document.addEventListener("keydown", function debugShift() {
+	if (engine.isPlaying() === false)
+	{
+		engine.loop();
+	}
 	if (debug_shift < 6) {
 		debug_shift += 1
 		var event = document.createEvent('CustomEvent');
