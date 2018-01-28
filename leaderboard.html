@@ -60,7 +60,7 @@
 
       var all_times = [];
       function updateLeaderboard() {
-        all_times.sort((a, b) => b.millis - a.millis);
+        all_times.sort((a, b) => a.millis - b.millis);
         var newestA = -1;
         var newestB = -1;
         for (var i = 0; i < all_times.length; i++) {
@@ -115,6 +115,7 @@
         document.getElementById("team-" + json.team).innerHTML = formatTime(json.millis);
         loopTimer = !(finished["A"] && finished["B"]);
         if (!loopTimer) {
+          timerEl.innerHTML = formatTime(json.millis);
           updateLeaderboard();
         }
       }

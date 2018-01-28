@@ -51,7 +51,7 @@ var rammaFjoldin = 0;
 var carAnimationPhase = 1;
 var needle;
 // FINISH LINE
-var FINISH_LINE_APPEARS = 50000;
+var FINISH_LINE_APPEARS = 45000;
 var RACE_OVER_DISTANCE = FINISH_LINE_APPEARS + 800;
 var distanceTraveled = 0;
 var finishLine;
@@ -115,7 +115,7 @@ function draw()
   );
   engine.rate(speed); // how fast sound is playing
 
-  if(GAME_LOCKED === false && engine.isPlaying() === false)
+  if(!raceOver && GAME_LOCKED === false && engine.isPlaying() === false)
   {
 	  engine.loop();
   }

@@ -10,6 +10,7 @@
     <script src="https://www.gstatic.com/firebasejs/4.9.0/firebase-database.js"></script>
     <script src="./firebase.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/phaser/2.4.8/phaser.min.js"></script>
+    <script src="./random-name.js"></script>
     <script src="./topgeese.js"></script>
 	<script type="text/javascript" src="p5.min.js"></script>
 	<script type="text/javascript" src="p5.sound.min.js"></script>
@@ -23,8 +24,10 @@
       <button id="resend-order" class="debug">Debug Order</button>
     </div>
 
+    <h1 id="driver_race_name"></h1>
+
     <div class="reset-container">
-      <button class="ui_button">Rematch!</button>
+      <button id="rematch" class="ui_button">Rematch!</button>
     </div>
 
     <div id="modal" class="open"><!-- Justin: remove open to hide -->
@@ -44,6 +47,9 @@
       var team = localStorage.getItem("team");
       var raceKey = localStorage.getItem("room_code");
       var roleKey = localStorage.getItem("role_key");
+      var cupName = localStorage.getItem("race_name");
+      document.getElementById("driver_race_name").innerHTML = "The " + cupName + " Cup";
+
       // Setup attendance
       var attendance = JSON.parse(localStorage.getItem("attendance"));
       var sa_el = document.getElementById("team-a-shifters");
@@ -78,7 +84,10 @@
       }
       var kickedOff = false;
       var shifterOrder = []
-      function kickoff() {
+      function kickoff(raceName) {
+        cupName = raceName;
+        localStorage.setItem("race_name", cupName);
+        document.getElementById("driver_race_name").innerHTML = "The " + cupName + " Cup";
         kickedOff = true;
         // Reveal game
         document.getElementById("modal").classList.remove("open");
@@ -108,6 +117,13 @@
           shifterOrder.push(i + 1);
         }
       }
+      function sendKickoff() {
+        firebase.database().ref(raceKey + "/kickoff").set({
+          kickoff: true,
+          time: new Date().getTime(),
+          name: cupName,
+        });
+      }
 
       function submitTime() {
         var end = new Date().getTime();
@@ -122,30 +138,39 @@
       document.getElementById("finish-debug").addEventListener("click", submitTime, false);
 
       var rematchMsg = document.getElementById("rematch-modal");
+      var rematchBtn = document.getElementById("rematch");
       function rematch() {
-        var cupName = getRandomName();
-        localStorage.setItem("race_name", cupMatch);
-        firebase.database().ref(room_code).update({
+        rematchBtn.disabled = true;
+        cupName = getRandomName();
+        document.getElementById("driver_race_name").innerHTML = "The " + cupName + " Cup";
+        localStorage.setItem("race_name", cupName);
+        firebase.database().ref(raceKey).update({
           name: cupName,
         });
-        rematchMsg.innerHTML = "Welcome to the<br/><h1>" + cupName + "Cup!</h1>";
+        rematchMsg.innerHTML = "WELCOME TO<br/><h1>The " + cupName + " Cup!</h1>";
         rematchMsg.classList.add("open");
         setTimeout(() => {
           rematchMsg.classList.remove("open");
-          kickoff();
+          kickedOff = false;
+          sendKickoff();
         }, 2000);
+        setTimeout(() => {
+          rematchBtn.disabled = false;
+        }, 5000);
         reinitializeGame();
       }
+      rematchBtn.addEventListener("click", rematch, false);
 
       document.addEventListener("config-loaded", function raceIndicators() {
         // LISTEN FOR KICKOFF
         firebase.database().ref(raceKey + "/kickoff").on("value", data => {
+          console.log("KICKOFF");
           var json = data.val();
           if (!json.time || json.time < startTime) {
             return;
           }
           if (!kickedOff && json.kickoff) {
-            kickoff();
+            kickoff(json.name);
           }
         });
         var readyRef = firebase.database().ref(raceKey + "/ready");
@@ -183,10 +208,7 @@
             && attendance.shifters_a === 0
             && attendance.shifters_b === 0
           ) {
-            firebase.database().ref(raceKey + "/kickoff").set({
-              kickoff: true,
-              time: new Date().getTime()
-            });
+            sendKickoff();
           }
         }
         readyRef.on("child_added", handleReady);
