@@ -31,7 +31,6 @@
       <p><a href="#" id="manual_check">check</a></p>
     </div>
     <script>
-      var startTime = new Date().getTime();
       var team = localStorage.getItem("team");
       var raceKey = localStorage.getItem("room_code");
       var roleKey = localStorage.getItem("role_key");
@@ -111,7 +110,6 @@
 
       document.addEventListener("config-loaded", function raceIndicators() {
         // LISTEN FOR KICKOFF
-        var startTime = new Date().getTime();
         firebase.database().ref(raceKey + "/kickoff").on("value", data => {
           var json = data.val();
           if (!json.time || json.time < startTime) {
