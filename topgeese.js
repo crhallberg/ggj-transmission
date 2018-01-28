@@ -1,7 +1,7 @@
 var game = new Phaser.Game(800, 600, Phaser.AUTO, 'main_game', { preload: preloadPhaser, create: create, update: update });
 
 var GAME_LOCKED = true;
-var CURRENT_GEAR = -1;
+var CURRENT_GEAR = 1;
 var START_TIME;
 var engine;
 var stallSound;
@@ -16,6 +16,7 @@ function preloadPhaser()
 	game.load.spritesheet('car3','images/car3.png');
 	game.load.spritesheet('tach','images/Tachometer.png');
 	game.load.spritesheet('needle','images/Needle.png');
+	game.load.spritesheet('finish','images/finish.png');
 }
 
 function preload()
@@ -31,7 +32,7 @@ function setup()
 
 
 var arrows;
-var velocity = 1;
+var velocity = 0;
 var road;
 var secondRoad;
 var TACH_FLOOR = 1000;
@@ -44,7 +45,16 @@ var tach = 1000;
 var rammaFjoldin = 0;
 var carAnimationPhase = 1;
 var needle;
-var NEEDLE_INCREMENT = 180/13;
+var NEEDLE_INCREMENT = 300/60;
+var VELOCITY_INCREMENT = 5;
+var needleDirection = 1;
+var distanceTraveled = 0;
+var FINISH_LINE_APPEARS = 10000;
+var RACE_OVER_DISTANCE = FINISH_LINE_APPEARS + 800;
+var finishLine;
+var finishLineAppeared = false;
+var finishLineDrawn = false;
+var raceOver = false;
 
 function draw()
 {
@@ -74,8 +84,8 @@ function create()
 	road = game.add.sprite(0,0,'road');
 	secondRoad = game.add.sprite(800,0,'road');
 	car = game.add.sprite(0,300,'car1');
-	game.add.sprite(674,474,'tach');
-	needle = game.add.sprite(740,544,'needle');
+	game.add.sprite(549,349,'tach');
+	needle = game.add.sprite(680,489,'needle');
 	needle.anchor.setTo(.8,.5);
 
 	arrows = game.input.keyboard.createCursorKeys();
@@ -89,45 +99,91 @@ function update()
 //	}
 	changeRoadSegmentPosition(road);
 	changeRoadSegmentPosition(secondRoad);
+	if(finishLineDrawn)
+	{
+		finishLine.position.x -= velocity;
+	}
+	distanceTraveled += velocity;
 	errorCorrect(road, secondRoad);
 	
 	updateCarSpriteIfNecessary();
 	
-	if(rammaFjoldin >= 60)
-	{
-		//console.log(rammaFjoldin);
-		attemptToIncreaseVelocity();
-		rammaFjoldin = 0;
-	}
+	increaseTach();
+	
 	rammaFjoldin++;
-//	logTach();
-//	console.log(velocity);
-//	console.log('GEAR: ' + gear);
 
 	if(arrows.right.isDown)
 	{
 		accelDown = true;
 	}
-	if (arrows.right.isUp && accelDown && gear <= 4)
+	if (arrows.right.isUp && accelDown && CURRENT_GEAR <= 4)
 	{
-		tach -= 2800;
-		gear++;
-		needle.angle = 0;
-		accelDown = false;
+		attemptShift();
 	}
-	else if(arrows.left.isDown && gear >= 0)
+	else if(arrows.left.isDown && CURRENT_GEAR >= 0)
 	{
-		gear--;
+		CURRENT_GEAR--;
+	}
+	if(distanceTraveled >= FINISH_LINE_APPEARS && finishLineDrawn === false)
+	{
+		finishLineDrawn = true;
+		finishLine = game.add.sprite(800,0,'finish');
 	}
 	
-	if(tach < MIN_RPM)
+	if(distanceTraveled >= RACE_OVER_DISTANCE)
 	{
-		velocity = 1;
-		gear = 0;
-		tach = 1000;
-		needle.angle = 0;
-		console.log('STALLED');
-		stalled = true;
+		raceOver = true;
+		console.log('YOUR WINNER');
+	}
+}
+
+function stall()
+{
+	velocity = 0;
+	CURRENT_GEAR = 0;
+	needle.angle = 0;
+	//console.log('STALLED');
+	stalled = true;
+}
+
+function increaseTach()
+{
+	needle.angle += (NEEDLE_INCREMENT * needleDirection);
+	if(needle.angle === 90)
+	{
+		var q = 16;
+	}
+	console.log(needle.angle);
+	if(needle.angle <= 0)
+	{
+		if(needleDirection === 1)
+		{
+			needle.angle = 180;
+			needleDirection = -1;
+		}
+		else
+		{
+			needle.angle = 0;
+			needleDirection = 1;
+		}
+	}
+}
+
+function attemptShift()
+{
+	accelDown = false;
+//	console.log(needle.angle);
+	if(CURRENT_GEAR < 5)
+	{
+		CURRENT_GEAR++;
+		if(needle.angle >= 65 && needle.angle <= 115)
+		{
+			velocity = VELOCITY_INCREMENT * CURRENT_GEAR;
+		}
+		else
+		{
+			stall();
+		}
 	}
 }
 
@@ -149,14 +205,18 @@ function updateCarSpriteIfNecessary()
 	{
 		game.add.sprite(0,300,'careven');
 	}
+	else if(rammaFjoldin === 60)
+	{
+		rammaFjoldin = 0;
+	}
 }
 
 function attemptToIncreaseVelocity()
 {
-	if(velocity < (VELOCITY_INCREMENTS_PER_GEAR + (VELOCITY_INCREMENTS_PER_GEAR * gear)))
+	if(velocity < (5 * (VELOCITY_INCREMENTS_PER_GEAR + (VELOCITY_INCREMENTS_PER_GEAR * CURRENT_GEAR))))
 	{
-		console.log('GEAR: ' + gear);
-		velocity++;
+//		console.log('GEAR: ' + CURRENT_GEAR);
+		velocity += VELOCITY_INCREMENT;
 		tach += TACH_INCREMENT_PER_ACCEL;
 		needle.angle += NEEDLE_INCREMENT;
 	}
@@ -164,7 +224,7 @@ function attemptToIncreaseVelocity()
 
 function logTach()
 {
-	console.log('TACH: ' + tach);
+//	console.log('TACH: ' + tach);
 }
 
 function changeRoadSegmentPosition(segment)
