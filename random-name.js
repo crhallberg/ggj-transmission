@@ -1,6 +1,7 @@
 var adjs = [
 	"Aggressive",
 	"Happy",
+	"High-Speed",
 	"Quiet",
 	"Short",
 	"Slippery",
@@ -12,10 +13,12 @@ var adjs = [
 var nouns = [
 	"Aerial",
 	"Canyon",
+	"Charity",
 	"Forest",
 	"Llama",
 	"Marsh",
 	"Powerthirst&trade;",
+	"Racer",
 	"Star",
 	"Tin",
 	"Tornado",
