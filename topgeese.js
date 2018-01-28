@@ -1,7 +1,7 @@
 var game = new Phaser.Game(800, 600, Phaser.AUTO, 'main_game', { preload: preloadPhaser, create: create, update: update });
 
 var GAME_LOCKED = true;
-var CURRENT_GEAR = -1;
+var CURRENT_GEAR = 1;
 var START_TIME;
 var engine;
 var stallSound;
@@ -35,7 +35,7 @@ var velocity = 1;
 var road;
 var secondRoad;
 var TACH_FLOOR = 1000;
-var gear = 0;
+var gear = 1;
 var VELOCITY_INCREMENTS_PER_GEAR = 14;
 var TACH_INCREMENT_PER_ACCEL = 200;
 var MIN_RPM = 600;
@@ -44,7 +44,9 @@ var tach = 1000;
 var rammaFjoldin = 0;
 var carAnimationPhase = 1;
 var needle;
-var NEEDLE_INCREMENT = 180/13;
+var NEEDLE_INCREMENT = 300/60;
+var VELOCITY_INCREMENT = 5;
+var needleDirection = 1;
 
 function draw()
 {
@@ -63,7 +65,7 @@ function draw()
   if(stalled)
   {
 	  stalled = false;
-	  stalled.play();
+	  stallSound.play();
   }
 }
 
@@ -93,41 +95,66 @@ function update()
 	
 	updateCarSpriteIfNecessary();
 	
-	if(rammaFjoldin >= 60)
-	{
-		//console.log(rammaFjoldin);
-		attemptToIncreaseVelocity();
-		rammaFjoldin = 0;
-	}
+	increaseTach();
+	
 	rammaFjoldin++;
-//	logTach();
-//	console.log(velocity);
-//	console.log('GEAR: ' + gear);
 
 	if(arrows.right.isDown)
 	{
 		accelDown = true;
 	}
-	if (arrows.right.isUp && accelDown && gear <= 4)
+	if (arrows.right.isUp && accelDown && CURRENT_GEAR <= 4)
 	{
-		tach -= 2800;
-		gear++;
-		needle.angle = 0;
-		accelDown = false;
+		attemptShift();
 	}
-	else if(arrows.left.isDown && gear >= 0)
+	else if(arrows.left.isDown && CURRENT_GEAR >= 0)
 	{
-		gear--;
+		CURRENT_GEAR--;
 	}
-	
-	if(tach < MIN_RPM)
+}
+
+function stall()
+{
+	velocity = VELOCITY_INCREMENT;
+	CURRENT_GEAR = 1;
+	needle.angle = 0;
+	console.log('STALLED');
+	stalled = true;
+}
+
+function increaseTach()
+{
+	needle.angle += (NEEDLE_INCREMENT * needleDirection);
+	if(needle.angle <= 0)
 	{
-		velocity = 1;
-		gear = 0;
-		tach = 1000;
-		needle.angle = 0;
-		console.log('STALLED');
-		stalled = true;
+		if(needleDirection === 1)
+		{
+			needle.angle = 180;
+			needleDirection = -1;
+		}
+		else
+		{
+			needle.angle = 0;
+			needleDirection = 1;
+		}
+	}
+}
+
+function attemptShift()
+{
+	accelDown = false;
+	console.log(needle.angle);
+	if(CURRENT_GEAR < 5)
+	{
+		CURRENT_GEAR++;
+		if(needle.angle > 75 && needle.angle < 105)
+		{
+			velocity = VELOCITY_INCREMENT * CURRENT_GEAR;
+		}
+		else
+		{
+			stall();
+		}
 	}
 }
 
@@ -153,10 +180,10 @@ function updateCarSpriteIfNecessary()
 
 function attemptToIncreaseVelocity()
 {
-	if(velocity < (VELOCITY_INCREMENTS_PER_GEAR + (VELOCITY_INCREMENTS_PER_GEAR * gear)))
+	if(velocity < (5 * (VELOCITY_INCREMENTS_PER_GEAR + (VELOCITY_INCREMENTS_PER_GEAR * CURRENT_GEAR))))
 	{
-		console.log('GEAR: ' + gear);
-		velocity++;
+		console.log('GEAR: ' + CURRENT_GEAR);
+		velocity += VELOCITY_INCREMENT;
 		tach += TACH_INCREMENT_PER_ACCEL;
 		needle.angle += NEEDLE_INCREMENT;
 	}
