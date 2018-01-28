@@ -23,6 +23,10 @@
       <button id="resend-order" class="debug">Debug Order</button>
     </div>
 
+    <div class="reset-container">
+      <button class="ui_button">Rematch!</button>
+    </div>
+
     <div id="modal" class="open"><!-- Justin: remove open to hide -->
       <p>waiting for the other players...</p>
       <p>
@@ -34,6 +38,8 @@
       </p>
       <p><a href="#" id="manual_check">check</a></p>
     </div>
+
+    <div id="rematch-modal">TEST</div>
     <script>
       var team = localStorage.getItem("team");
       var raceKey = localStorage.getItem("room_code");
@@ -76,6 +82,7 @@
         kickedOff = true;
         // Reveal game
         document.getElementById("modal").classList.remove("open");
+        document.querySelector(".reset-container").classList.add("open");
         // Start countdown
         var secondsTilStart = 3;
         setTimeout(function delayCountDown() {
@@ -113,6 +120,21 @@
         });
       }
       document.getElementById("finish-debug").addEventListener("click", submitTime, false);
+
+      var rematchMsg = document.getElementById("rematch-modal");
+      function rematch() {
+        var cupName = getRandomName();
+        localStorage.setItem("race_name", cupMatch);
+        firebase.database().ref(room_code).update({
+          name: cupName,
+        });
+        rematchMsg.innerHTML = "Welcome to the<br/><h1>" + cupName + "Cup!</h1>";
+        rematchMsg.classList.add("open");
+        setTimeout(() => {
+          rematchMsg.classList.remove("open");
+          kickoff();
+        }, 2000);
+      }
 
       document.addEventListener("config-loaded", function raceIndicators() {
         // LISTEN FOR KICKOFF
