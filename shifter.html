@@ -52,6 +52,7 @@
           // WAIT FOR ORDER
           firebase.database().ref(raceKey + "/kickoff").on("value", data => {
             document.getElementById("gear-number").innerHTML = team;
+            document.body.classList.remove("current");
           });
           firebase.database().ref(raceKey + "/order").on("value", data => {
             var json = data.val();
