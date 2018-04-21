@@ -5,22 +5,22 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<title>Top Geese</title>
-    <link rel="stylesheet" href="./style.css"/>
-		<link href="https://fonts.googleapis.com/css?family=Roboto+Condensed" rel="stylesheet"/>
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Condensed"/>
+    <link rel="stylesheet" href="css/style.css"/>
   </head>
   <body>
 		<div id="center_container">
 			<img id="logo" src="images/logo.png"/><br>
 			Enter new or existing race code:<br>
-			<input id="race_code" type="text">
+			<input id="race_code" type="text"/>
       <a href="#" id="shuffle_icon"><img class="role_icon" src="images/refresh.svg"/></a><br>
 			<button id="start" class="ui_button">Go!</button>
 		</div>
 
-    <script src="https://www.gstatic.com/firebasejs/4.9.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/4.9.0/firebase-database.js"></script>
-    <script src="./firebase.js"></script>
-    <script src="./random-name.js"></script>
+    <script src="js/vendor/firebase-app.js"></script>
+    <script src="js/vendor/firebase-database.js"></script>
+    <script src="js/firebase.js"></script>
+    <script src="js/random-name.js"></script>
     <script>
       var codeField = document.getElementById("race_code");
       function getKey() {
@@ -52,10 +52,10 @@
               times: [],
               created: new Date().getTime(),
             }).then(x => {
-              window.location = "race_setup.html";
+              window.location = "setup/";
             });
           } else {
-            window.location = "race_setup.html";
+            window.location = "setup/";
           }
         });
       }

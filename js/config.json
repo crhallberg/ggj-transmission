@@ -1,0 +1,10 @@
+{
+  "hash": {
+    "key": "hashkeyofjustice",
+    "salt": "hawaiianredsalt"
+  },
+  "firebase": {
+    "apiKey": "AIzaSyAzRdnIhSYPgPqDHC13OBt17fS1oXC4Ris ",
+    "databaseURL": "https://ggj2018-43cf6.firebaseio.com/"
+  }
+}
