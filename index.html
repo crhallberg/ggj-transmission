@@ -12,7 +12,7 @@
 		<div id="center_container">
 			<img id="logo" src="images/logo.png"/><br>
 			Enter new or existing race code:<br>
-			<input id="race_code" type="text"/>
+			<input id="race_code" type="text" autofocus />
       <a href="#" id="shuffle_icon"><img class="role_icon" src="images/refresh.svg"/></a><br>
 			<button id="start" class="ui_button">Go!</button>
 		</div>
@@ -33,6 +33,7 @@
       }
       function newName() {
         codeField.value = getKey();
+        codeField.select();
       }
       document.getElementById("shuffle_icon").addEventListener("click", newName, false);
       newName();
