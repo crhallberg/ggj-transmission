@@ -1,0 +1,23 @@
+#current_race {
+  font-family: "Niconne", cursive;
+  font-size: 20px;
+}
+#leaderboard_race_name {
+  font-family: "Oswald", sans-serif;
+  font-style: italic;
+  font-size: 30px;
+  font-weight: bold;
+}
+#race_time {
+  font-size: 5rem;
+  font-weight: bold;
+}
+#leaderboard {
+  font-family: "Oswald", sans-serif;
+  font-style: italic;
+  font-size: 30px;
+  font-weight: bold;
+}
+table { border-spacing: 0; }
+tr:nth-child(even) { background-color: #ddd; }
+th, td { padding: 1rem 2rem; }

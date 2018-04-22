@@ -3,7 +3,7 @@ var GEAR_VALUE = -1;
 var raceKey = localStorage.getItem("room_code");
 var roleKey = localStorage.getItem("role_key");
 var team = localStorage.getItem("team");
-var sound = new Audio("sounds/gearshift.wav");
+var sound = new Audio("../sounds/gearshift.wav");
 
 document.getElementById("gear-number").innerHTML = team;
 

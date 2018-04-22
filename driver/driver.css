@@ -1,0 +1,35 @@
+#driver_race_name {
+  font-family: "Oswald", sans-serif;
+  font-style: italic;
+  text-align: center;
+}
+canvas { margin: auto; }
+.reset-container {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  text-align: center;
+  background-color: #fff;
+  z-index: 2;
+}
+#rematch-modal {
+  display: none;
+  position: absolute;
+  top: 200px;
+  left: 0;
+  width: 100%;
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+  border-top: 1px solid #777;
+  border-bottom: 1px solid #777;
+  text-align: center;
+  background-color: #fff;
+  box-shadow: 0 .5rem .5rem rgba(0,0,0,.5);
+  z-index: 2;
+}
+/* .reset-container.open, */
+#rematch-modal.open { display: block; }
