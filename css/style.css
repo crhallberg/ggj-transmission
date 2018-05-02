@@ -74,6 +74,9 @@ td:not(:first-child) {
 .ui_button.success:hover {
   cursor: default;
 }
+.role_icon {
+  width: 20px;
+}
 
 /* modal */
 #modal {

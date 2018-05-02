@@ -51,12 +51,14 @@ document.addEventListener("config-loaded", function leaderboard() {
         document.getElementById("select-a-driver").disabled = false;
         driverAicon.src = "../images/driver_inactive.svg";
       }
-      if (driverB) {
-        document.getElementById("select-b-driver").disabled = true;
-        driverBicon.src = "../images/driver.svg";
-      } else {
-        document.getElementById("select-b-driver").disabled = false;
-        driverBicon.src = "../images/driver_inactive.svg";
+      if (document.getElementById("select-b-driver")) {
+        if (driverB) {
+          document.getElementById("select-b-driver").disabled = true;
+          driverBicon.src = "../images/driver.svg";
+        } else {
+          document.getElementById("select-b-driver").disabled = false;
+          driverBicon.src = "../images/driver_inactive.svg";
+        }
       }
       // Update icons
       for (var i = 0; i < teamAshifters.length; i++) {
@@ -129,7 +131,11 @@ document.addEventListener("config-loaded", function leaderboard() {
     if (currentRole.team === json.team) {
       localStorage.setItem("race_name", cupName);
       localStorage.setItem("team", currentRole.team);
-      window.location = "../" + currentRole.role + "/";
+      if (SINGLE_MODE) {
+        window.location = "../" + currentRole.role + "/single.html";
+      } else {
+        window.location = "../" + currentRole.role + "/";
+      }
     }
   }
   firebase.database().ref(raceKey + "/setup").on("child_added", jump);

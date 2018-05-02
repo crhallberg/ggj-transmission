@@ -12,23 +12,23 @@ var stalled = false;
 
 function preloadPhaser()
 {
-	game.load.spritesheet('road','images/road.png');
-	game.load.spritesheet('car','images/car.png');
-	game.load.spritesheet('car1','images/car1.png');
-	game.load.spritesheet('careven','images/careven.png');
-	game.load.spritesheet('car3','images/car3.png');
-	game.load.spritesheet('tach','images/Tachometer.png');
-	game.load.spritesheet('needle','images/Needle.png');
-	game.load.spritesheet('finish','images/finish.png');
+	game.load.spritesheet('road','../images/road.png');
+	game.load.spritesheet('car','../images/car.png');
+	game.load.spritesheet('car1','../images/car1.png');
+	game.load.spritesheet('careven','../images/careven.png');
+	game.load.spritesheet('car3','../images/car3.png');
+	game.load.spritesheet('tach','../images/Tachometer.png');
+	game.load.spritesheet('needle','../images/Needle.png');
+	game.load.spritesheet('finish','../images/finish.png');
 }
 
 function preload()
 {
-	engine = loadSound('engine.wav');
-	stallSound = loadSound('stall.wav');
-	finishSound = loadSound('sounds/finish.wav');
-	countdownSound = loadSound('sounds/countdown.wav');
-	applauseSound = loadSound('sounds/applause.wav');
+	engine = loadSound('../sounds/engine.wav');
+	stallSound = loadSound('../sounds/stall.wav');
+	finishSound = loadSound('../sounds/finish.wav');
+	countdownSound = loadSound('../sounds/countdown.wav');
+	applauseSound = loadSound('../sounds/applause.wav');
 }
 
 function setup()

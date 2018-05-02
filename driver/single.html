@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<title>Top Geese</title>
+    <link rel="stylesheet" href="../css/style.css"/>
+    <link rel="stylesheet" href="driver.css"/>
+  </head>
+  <body>
+    <div class="debug">
+      <p><a href="index.html">&lt; New Race</a></p>
+      <p>Seconds: <span id="countdown"></span></p>
+      <p>Gear: <span id="shift-gear"></span></p>
+      <button id="finish-debug">Finish</button>
+      <button id="resend-order" class="debug">Debug Order</button>
+    </div>
+
+    <h1 id="driver_race_name"></h1>
+
+    <div class="reset-container">
+      <button id="rematch" class="ui_button">Rematch!</button>
+    </div>
+
+    <div id="modal" class="open"><!-- Justin: remove open to hide -->
+      <p>waiting for the other players...</p>
+      <p>
+        <img class="role_icon team-A-driver" src="../images/driver_inactive.svg"/>
+        <span id="team-a-shifters"></span>
+      </p>
+      <p><a href="#" id="manual_check">check</a></p>
+    </div>
+
+    <div id="rematch-modal">TEST</div>
+
+    <script src="../js/random-name.js"></script>
+    <script>const SINGLE_MODE = true;</script>
+
+    <script src="../js/vendor/firebase-app.js"></script>
+    <script src="../js/vendor/firebase-database.js"></script>
+    <script src="../js/firebase.js"></script>
+    <script src="driver-ui.js"></script>
+
+    <script src="../js/vendor/p5.min.js"></script>
+    <script src="../js/vendor/p5.sound.min.js"></script>
+    <script src="single-simple.js"></script>
+  </body>
+</html>
